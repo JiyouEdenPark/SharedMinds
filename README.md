@@ -2,23 +2,7 @@
 
 An interactive visualization of spontaneous thinking as ripples on water, built with vanilla HTML/CSS/JavaScript Canvas.
 
-한국어 요약: 물결처럼 생성·확산·소멸하는 생각을 캔버스로 시각화한 인터랙티브 프로젝트입니다. 텍스트를 입력하면 메인 텍스트가 나타나고, 1초마다 작은 텍스트가 물결(ripple) 형태로 둘러싸이며, 일정 시간이 지나면 안쪽에서 바깥쪽으로 서서히 사라집니다. 링 텍스트는 한국어 → 일본어 → 영어 순서로 번갈아 나타납니다.
-
-## Quick Start
-
-Option A: Just open `index.html` in a modern browser.
-
-Option B: Serve locally (recommended for API requests and consistent behavior):
-
-```bash
-# using Node
-npx serve .
-
-# or Python
-python3 -m http.server 3000
-```
-
-Open the shown URL (e.g., http://localhost:3000).
+물결처럼 생성·확산·소멸하는 생각을 캔버스로 시각화한 인터랙티브 프로젝트입니다. 텍스트를 입력하면 메인 텍스트가 나타나고, 1초마다 작은 텍스트가 물결(ripple) 형태로 둘러싸이며, 일정 시간이 지나면 안쪽에서 바깥쪽으로 서서히 사라집니다. 링 텍스트는 한국어 → 일본어 → 영어 순서로 번갈아 나타납니다.
 
 ## How to Use
 
@@ -64,13 +48,6 @@ Translation/config:
 - `fetchTranslations(...)`: async translation fetch using MyMemory.
 - `translationCache`: caches results per input text.
 - `detectLanguage(text)`: simple ko/ja/en heuristic; Han/CJK ideographs are treated as Japanese.
-
-## Styling
-
-Edit `style.css` to customize:
-- Background color (currently white)
-- Input and button placement/size (bottom-center, compact button attached to the input)
-- Cursor and responsive layout
 
 ## Known Notes
 
