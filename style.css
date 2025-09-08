@@ -1,0 +1,103 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+.input-section {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 0;
+    align-items: center;
+}
+
+#textInput {
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-right: none;
+    border-top-left-radius: 18px;
+    border-bottom-left-radius: 18px;
+    background: #ffffff;
+    color: #000000;
+    outline: none;
+    transition: all 0.2s ease;
+    min-width: 280px;
+}
+
+#textInput::placeholder {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+#textInput:focus {
+    border-color: rgba(0, 0, 0, 0.5);
+}
+
+#submitBtn {
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-right-radius: 18px;
+    border-bottom-right-radius: 18px;
+    background: #f4f4f4;
+    color: #000000;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+#submitBtn:hover {
+    background: #e9e9e9;
+    border-color: rgba(0, 0, 0, 0.4);
+}
+
+#submitBtn:active {
+    background: #e0e0e0;
+}
+
+#rippleCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .input-section {
+        left: 50%;
+        right: auto;
+        bottom: 16px;
+        transform: translateX(-50%);
+        flex-direction: row;
+        gap: 0;
+    }
+
+    #textInput {
+        min-width: 0;
+        width: 70vw;
+    }
+
+    #submitBtn {
+        width: auto;
+    }
+}
