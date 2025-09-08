@@ -76,7 +76,3 @@ Edit `style.css` to customize:
 
 - Public translation APIs may throttle or reject frequent requests. The app gracefully falls back to the original text.
 - If you want a fully offline experience or consistent phrasing, you can disable translation by returning the input string from `translate(...)`, or fix the language cycle to a single language by modifying the `langs` array in `createRipple(...)`.
-
-## License
-
-MIT (or your preferred license). Replace this section as needed.
