@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thinking Ripples - 생각의 파동</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="input-section">
+        <div class="mic-wrap">
+          <button id="micBtn" aria-label="Start voice input"></button>
+          <div id="micPulse" aria-hidden="true"></div>
+        </div>
+      </div>
+      <canvas id="rippleCanvas"></canvas>
+
+      <div id="connectionStatus" class="connection-status">
+        <span id="statusText">Connecting...</span>
+        <span id="userCount">0 users online</span>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="socketManager.js"></script>
+    <script src="proxyASR.js"></script>
+    <script src="voice.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
