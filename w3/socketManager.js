@@ -38,15 +38,17 @@ class SocketManager {
     });
   }
 
-  sendText(text, x, y) {
+  sendText(text, x, y, translations, id) {
     if (!this.isConnected || !this.socket) {
       return false;
     }
 
     this.socket.emit("newText", {
+      id: id,
       text: text,
       x: x,
       y: y,
+      translations: translations,
     });
     return true;
   }

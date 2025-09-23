@@ -209,6 +209,11 @@ body {
   cursor: crosshair;
 }
 
+/* 떠다니는 텍스트를 위한 커서 변경 */
+#rippleCanvas.floating-text {
+  cursor: pointer;
+}
+
 /* 연결 상태 표시 */
 .connection-status {
   position: absolute;

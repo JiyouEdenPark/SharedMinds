@@ -22,6 +22,19 @@ app.use(express.static(path.join(__dirname)));
 let sharedTexts = [];
 let connectedUsers = 0;
 
+// Function to clean up old texts (older than 30 seconds)
+function cleanupOldTexts() {
+  const thirtySecondsAgo = Date.now() - 30000; // 30 seconds in milliseconds
+  const initialLength = sharedTexts.length;
+
+  sharedTexts = sharedTexts.filter(text => text.timestamp > thirtySecondsAgo);
+
+  const removedCount = initialLength - sharedTexts.length;
+  if (removedCount > 0) {
+    console.log(`Cleaned up ${removedCount} old texts. Remaining: ${sharedTexts.length}`);
+  }
+}
+
 // Socket.io connection handling
 io.on("connection", (socket) => {
   console.log("New user connected:", socket.id);
@@ -39,8 +52,9 @@ io.on("connection", (socket) => {
 
     // Create text object
     const textObject = {
-      id: Date.now() + Math.random(), // Unique ID
+      id: data.id, // Use client-provided ID
       text: data.text,
+      translations: data.translations || null, // 클라이언트에서 번역한 결과 저장
       timestamp: Date.now(),
       userId: socket.id,
       x: data.x || Math.random() * 800 + 100,
@@ -53,7 +67,10 @@ io.on("connection", (socket) => {
     // Broadcast to all clients
     io.emit("textAdded", textObject);
 
-    // Memory management: keep only last 100 texts
+    // Clean up old texts first
+    cleanupOldTexts();
+
+    // Memory management: keep only last 100 texts (as backup)
     if (sharedTexts.length > 100) {
       sharedTexts = sharedTexts.slice(-100);
     }
@@ -86,6 +103,9 @@ app.get("/api/stats", (req, res) => {
 
 // Port configuration
 const PORT = process.env.PORT || 3000;
+
+// Set up periodic cleanup every 10 seconds
+setInterval(cleanupOldTexts, 10000);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
