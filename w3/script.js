@@ -243,13 +243,24 @@ class SharedRippleThinking {
   changeTextLanguage(thought) {
     if (!thought.translations || !thought.mainText.clickable) return;
 
-    const languages = ['original', 'ko', 'ja', 'en'];
+    // 원본 텍스트의 언어 감지
+    const originalLanguage = this.detectLanguage(thought.text);
+
     const availableLanguages = ['original'];
 
-    // 번역이 준비된 언어들만 추가
-    if (thought.translations.ko) availableLanguages.push('ko');
-    if (thought.translations.ja) availableLanguages.push('ja');
-    if (thought.translations.en) availableLanguages.push('en');
+    // 번역이 준비된 언어들만 추가하되, 원본 언어와 같은 것은 제외
+    if (thought.translations.ko && originalLanguage !== 'ko') {
+      availableLanguages.push('ko');
+    }
+    if (thought.translations.ja && originalLanguage !== 'ja') {
+      availableLanguages.push('ja');
+    }
+    if (thought.translations.en && originalLanguage !== 'en') {
+      availableLanguages.push('en');
+    }
+
+    // 사용 가능한 언어가 1개(original만)면 전환하지 않음
+    if (availableLanguages.length <= 1) return;
 
     // 현재 언어 인덱스 증가
     thought.mainText.languageIndex = (thought.mainText.languageIndex + 1) % availableLanguages.length;
