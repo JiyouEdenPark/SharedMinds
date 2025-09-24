@@ -22,12 +22,12 @@ app.use(express.static(path.join(__dirname)));
 let sharedTexts = [];
 let connectedUsers = 0;
 
-// Function to clean up old texts (older than 30 seconds)
+// Function to clean up old texts (older than 60 seconds)
 function cleanupOldTexts() {
-  const thirtySecondsAgo = Date.now() - 30000; // 30 seconds in milliseconds
+  const sixtySecondsAgo = Date.now() - 60000; // 60 seconds in milliseconds
   const initialLength = sharedTexts.length;
 
-  sharedTexts = sharedTexts.filter(text => text.timestamp > thirtySecondsAgo);
+  sharedTexts = sharedTexts.filter(text => text.timestamp > sixtySecondsAgo);
 
   const removedCount = initialLength - sharedTexts.length;
   if (removedCount > 0) {
@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
       id: data.id, // Use client-provided ID
       text: data.text,
       translations: data.translations || null, // 클라이언트에서 번역한 결과 저장
-      sentiment: data.sentiment || { sentiment: 'neutral', confidence: 50 }, // 감성 분석 결과 저장
+      hemisphere: data.hemisphere || { hemisphere: 'right', confidence: 50 }, // 뇌 반구 분석 결과 저장
       timestamp: Date.now(),
       userId: socket.id,
       x: data.x || Math.random() * 800 + 100,

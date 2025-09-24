@@ -51,14 +51,14 @@ class SharedRippleThinking {
 
     this.socketManager.onInitialTexts = (texts) => {
       texts.forEach((textObj) => {
-        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations, textObj.sentiment);
+        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations, textObj.hemisphere);
       });
     };
 
     this.socketManager.onTextReceived = (textObj) => {
       // 자신이 보낸 메시지는 표시하지 않음
       if (!this.sentMessageIds.has(textObj.id)) {
-        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations, textObj.sentiment);
+        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations, textObj.hemisphere);
       }
     };
 
@@ -77,27 +77,27 @@ class SharedRippleThinking {
     // 먼저 화면에 표시
     const thought = this.showThought(text, x, y);
 
-    // 감성 분석과 번역이 완료되면 서버로 전송
+    // 뇌 반구 분석과 번역이 완료되면 서버로 전송
     this.waitForAnalysisAndSend(thought);
   }
 
   async waitForAnalysisAndSend(thought) {
-    // 감성 분석 수행
+    // 뇌 반구 분석 수행
     try {
-      const sentimentResult = await ProxyAI.analyzeTextSentiment(thought.text);
-      thought.sentiment = sentimentResult;
-      console.log("Sentiment analysis result:", sentimentResult);
+      const hemisphereResult = await ProxyAI.analyzeTextHemisphere(thought.text);
+      thought.hemisphere = hemisphereResult;
+      console.log("Brain hemisphere analysis result:", hemisphereResult);
     } catch (error) {
-      console.error("Sentiment analysis failed:", error);
+      console.error("Brain hemisphere analysis failed:", error);
       // fallback 값 설정
-      thought.sentiment = { sentiment: 'neutral', confidence: 50 };
+      thought.hemisphere = { hemisphere: 'right', confidence: 50 };
     }
 
     // 번역이 완료될 때까지 대기
     const checkTranslation = () => {
       if (thought.translations && thought.translations.ko !== null) {
-        // 번역과 감성 분석이 모두 완료되면 서버로 전송
-        this.socketManager.sendText(thought.text, thought.x, thought.y, thought.translations, thought.id, thought.sentiment);
+        // 번역과 뇌 반구 분석이 모두 완료되면 서버로 전송
+        this.socketManager.sendText(thought.text, thought.x, thought.y, thought.translations, thought.id, thought.hemisphere);
         // 보낸 메시지 ID를 추적
         this.sentMessageIds.add(thought.id);
       } else {
@@ -303,7 +303,7 @@ class SharedRippleThinking {
     thought.mainText.currentLanguage = newLanguage;
   }
 
-  showThought(text, x = null, y = null, id = null, existingTranslations = null, existingSentiment = null) {
+  showThought(text, x = null, y = null, id = null, existingTranslations = null, existingHemisphere = null) {
     // 랜덤 위치 생성 (입력창 영역 제외)
     const margin = 100;
     const thoughtX =
@@ -334,7 +334,7 @@ class SharedRippleThinking {
       fadeStartTime: Date.now() + 10000, // 약 10초 후 페이드 시작
       ringCount: 0,
       translations: existingTranslations || { ko: null, ja: null, en: null },
-      sentiment: existingSentiment || { sentiment: 'neutral', confidence: 50 }, // 감성 분석 결과
+      hemisphere: existingHemisphere || { hemisphere: 'right', confidence: 50 }, // 뇌 반구 분석 결과
     };
 
     this.thoughts.push(thought);
@@ -432,24 +432,37 @@ class SharedRippleThinking {
           thought.mainText.floatStartTime = now;
           thought.mainText.clickable = true; // 떠다니는 동안 클릭 가능
           thought.mainText.opacity = 1; // 떠다니기 시작할 때 완전히 보이게
-          console.log("thought.sentiment", thought.sentiment);
+          console.log("thought.hemisphere", thought.hemisphere);
 
-          // 감성에 따른 방향 결정
-          let directionX, directionY;
-          if (thought.sentiment && thought.sentiment.sentiment === 'emotional') {
-            // 감정적이면 우측으로 움직임
-            directionX = 1; // 우측
-            directionY = (Math.random() - 0.5) * 0.5; // 약간의 수직 움직임
+          // 뇌 반구에 따른 떠다니는 영역 설정
+          const centerX = this.canvas.width / 2;
+
+          if (thought.hemisphere && thought.hemisphere.hemisphere === 'left') {
+            // 좌뇌: 왼쪽 영역에서 떠다니기
+            thought.floatZone = {
+              minX: 50,
+              maxX: centerX - 50,
+              minY: 50,
+              maxY: this.canvas.height - 50
+            };
           } else {
-            // 중립적이면 좌측으로 움직임
-            directionX = -1; // 좌측
-            directionY = (Math.random() - 0.5) * 0.5; // 약간의 수직 움직임
+            // 우뇌: 오른쪽 영역에서 떠다니기
+            thought.floatZone = {
+              minX: centerX + 50,
+              maxX: this.canvas.width - 50,
+              minY: 50,
+              maxY: this.canvas.height - 50
+            };
           }
 
+          // 랜덤 방향 생성
+          const randomX = (Math.random() - 0.5) * 2; // -1 ~ 1
+          const randomY = (Math.random() - 0.5) * 2; // -1 ~ 1
+          const magnitude = Math.sqrt(randomX * randomX + randomY * randomY);
+
           // 정규화 (단위벡터로 만들기)
-          const magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
-          thought.mainText.floatDirection.x = directionX / magnitude;
-          thought.mainText.floatDirection.y = directionY / magnitude;
+          thought.mainText.floatDirection.x = randomX / magnitude;
+          thought.mainText.floatDirection.y = randomY / magnitude;
         }
 
         // 떠다니는 애니메이션
@@ -463,12 +476,32 @@ class SharedRippleThinking {
             thought.mainText.opacity = Math.max(0, 1 - fadeProgress);
           }
 
-          // 화면 경계 체크 및 반사
-          if (thought.x < 50 || thought.x > this.canvas.width - 50) {
-            thought.mainText.floatDirection.x *= -1;
-          }
-          if (thought.y < 50 || thought.y > this.canvas.height - 50) {
-            thought.mainText.floatDirection.y *= -1;
+          // 뇌 반구 영역 경계 체크 및 반사
+          if (thought.floatZone) {
+            // X축: 영역 밖에 있으면 영역으로 이동하도록 방향 설정
+            if (thought.x < thought.floatZone.minX) {
+              thought.mainText.floatDirection.x = Math.abs(thought.mainText.floatDirection.x); // 오른쪽으로
+            } else if (thought.x > thought.floatZone.maxX) {
+              thought.mainText.floatDirection.x = -Math.abs(thought.mainText.floatDirection.x); // 왼쪽으로
+            } else {
+              // 영역 내에 있으면 경계에서 반사
+              if (thought.x <= thought.floatZone.minX + 10 || thought.x >= thought.floatZone.maxX - 10) {
+                thought.mainText.floatDirection.x *= -1;
+              }
+            }
+
+            // Y축: 상하 경계에서 반사
+            if (thought.y < thought.floatZone.minY || thought.y > thought.floatZone.maxY) {
+              thought.mainText.floatDirection.y *= -1;
+            }
+          } else {
+            // 폴백: 전체 화면 경계 체크
+            if (thought.x < 50 || thought.x > this.canvas.width - 50) {
+              thought.mainText.floatDirection.x *= -1;
+            }
+            if (thought.y < 50 || thought.y > this.canvas.height - 50) {
+              thought.mainText.floatDirection.y *= -1;
+            }
           }
 
           // 정규화된 방향 × 속도 × 전체 속도 배수 = 다음 좌표
@@ -498,12 +531,12 @@ class SharedRippleThinking {
       }
     });
 
-    // 완전히 사라진 생각들 제거 (떠다니는 텍스트는 30초 후 제거)
+    // 완전히 사라진 생각들 제거 (떠다니는 텍스트는 50초 후 제거)
     this.thoughts = this.thoughts.filter((thought) => {
-      // 떠다니는 텍스트가 30초 이상 지났으면 제거
+      // 떠다니는 텍스트가 50초 이상 지났으면 제거
       if (thought.mainText.isFloating && thought.mainText.floatStartTime) {
         const floatDuration = now - thought.mainText.floatStartTime;
-        if (floatDuration > 30000) { // 30초 = 30000ms
+        if (floatDuration > 50000) { // 50초 = 50000ms
           // 보낸 메시지 ID에서도 제거 (메모리 정리)
           this.sentMessageIds.delete(thought.id);
           return false; // 제거
@@ -512,7 +545,7 @@ class SharedRippleThinking {
 
       // 일반적인 제거 조건들
       return (
-        thought.mainText.isFloating || // 떠다니는 텍스트는 30초 이내에만 유지
+        thought.mainText.isFloating || // 떠다니는 텍스트는 50초 이내에만 유지
         thought.mainText.opacity > 0 ||
         thought.ripples.some((ripple) => ripple.opacity > 0)
       );

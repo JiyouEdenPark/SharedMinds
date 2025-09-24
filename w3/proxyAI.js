@@ -1,24 +1,41 @@
 (function () {
   /**
-   * Calls the ITP-IMA Replicate proxy to analyze emotional sentiment of text.
-   * @param {string} text - The text to analyze for emotional sentiment.
-   * @returns {Promise<Object>} Analysis result with sentiment category and confidence.
+   * Calls the ITP-IMA Replicate proxy to analyze brain hemisphere thinking style of text.
+   * @param {string} text - The text to analyze for brain hemisphere thinking style.
+   * @returns {Promise<Object>} Analysis result with brain hemisphere category and confidence.
    */
-  async function analyzeTextSentiment(text) {
+  async function analyzeTextHemisphere(text) {
     const url = "https://itp-ima-replicate-proxy.web.app/api/create_n_get";
     let authToken = "";
     if (!authToken) {
       try {
         authToken = localStorage.getItem("itp-ima-replicate-proxy-ok") || "";
-      } catch (_) {}
+      } catch (_) { }
     }
 
-    const prompt = `Analyze the emotional sentiment of the text "${text}". 
+    const prompt = `Analyze the thinking style of the text "${text}" based on brain hemisphere characteristics.
+
+    LEFT BRAIN (logical, analytical, numerical, linguistic, sequential, objective):
+    - Logical reasoning, analysis, cause-effect relationships
+    - Numbers, calculations, statistics, data, measurements
+    - Step-by-step processes, procedures, methods, rules
+    - Facts, objectivity, accuracy, precision, reality
+    - Language processing, verbal communication
+    - Linear, sequential thinking
+
+    RIGHT BRAIN (creative, intuitive, emotional, visual, holistic, subjective):
+    - Creative expression, art, design, imagination, ideas
+    - Emotions, feelings, mood, heart, love, happiness, sadness
+    - Intuition, inspiration, hunches, sixth sense, atmosphere
+    - Visual patterns, shapes, forms, spatial relationships
+    - Holistic, comprehensive, integrated thinking
+    - Non-linear, associative thinking
+
     Return a JSON object with:
-    - "sentiment": one of ["neutral", "emotional"]
+    - "hemisphere": one of ["left", "right"] (representing left brain or right brain thinking)
     - "confidence": number from 0-100
     
-    Example: {"sentiment": "emotional", "confidence": 85}`;
+    Example: {"hemisphere": "right", "confidence": 85}`;
 
     const data = {
       model: "openai/gpt-5",
@@ -27,7 +44,7 @@
       },
     };
 
-    console.log("Making sentiment analysis request for text:", text);
+    console.log("Making brain hemisphere analysis request for text:", text);
 
     const options = {
       method: "POST",
@@ -44,12 +61,12 @@
 
       if (!raw_response.ok) {
         throw new Error(
-          `Sentiment analysis request failed: ${raw_response.status} ${raw_response.statusText}`
+          `Brain hemisphere analysis request failed: ${raw_response.status} ${raw_response.statusText}`
         );
       }
 
       const json_response = await raw_response.json();
-      console.log("Sentiment analysis response:", json_response);
+      console.log("Brain hemisphere analysis response:", json_response);
 
       // Parse the response
       let analysisResult;
@@ -67,7 +84,7 @@
 
       // Validate the response structure
       if (
-        !analysisResult.sentiment ||
+        !analysisResult.hemisphere ||
         typeof analysisResult.confidence !== "number"
       ) {
         throw new Error("Invalid analysis result format");
@@ -75,31 +92,31 @@
 
       return {
         text: text,
-        sentiment: analysisResult.sentiment,
+        hemisphere: analysisResult.hemisphere,
         confidence: Math.max(0, Math.min(100, analysisResult.confidence)),
       };
     } catch (error) {
-      console.error("Error in sentiment analysis:", error);
+      console.error("Error in brain hemisphere analysis:", error);
 
-      return fallbackSentimentAnalysis(text);
+      return fallbackHemisphereAnalysis(text);
     }
   }
 
   /**
-   * Fallback sentiment analysis using keyword matching
+   * Fallback brain hemisphere analysis using keyword matching
    * @param {string} text - The text to analyze
-   * @returns {Object} Basic sentiment analysis result
+   * @returns {Object} Basic brain hemisphere analysis result
    */
-  function fallbackSentimentAnalysis(text) {
+  function fallbackHemisphereAnalysis(text) {
     return {
       text: text,
-      sentiment: "neutral",
+      hemisphere: "right", // Default to right brain (creative thinking)
       confidence: 50,
     };
   }
 
   window.ProxyAI = {
-    analyzeTextSentiment,
-    fallbackSentimentAnalysis,
+    analyzeTextHemisphere,
+    fallbackHemisphereAnalysis,
   };
 })();
