@@ -2,33 +2,32 @@
 
 A real-time collaborative platform where multiple users can share their thoughts through voice recognition and see them visualized as expanding ripples on a shared canvas, with AI-powered brain hemisphere analysis and multi-language translation.
 
-## ✨ **Key Features**
 
-### 🧠 **AI-Powered Brain Hemisphere Analysis**
+### **AI-Powered Brain Hemisphere Analysis**
 - Real-time analysis of thinking style using AI (left brain vs right brain)
 - Left brain (logical) thoughts float in the left screen area, right brain (creative) thoughts float in the right screen area
 - Automatic brain hemisphere classification with confidence scores
 - Smart zone-based movement that guides texts to their designated areas
 
-### 🌍 **Multi-Language Support**
+### **Multi-Language Support**
 - Automatic language detection and translation
 - Support for Korean, Japanese, and English
 - Click on floating texts to cycle through different language versions
 - Smart language switching (removes duplicate languages)
 
-### 🌐 **Real-time Collaboration**
+### **Real-time Collaboration**
 - Multiple users can connect simultaneously and share their thoughts in real-time
 - All connected users see each other's thoughts appear instantly on their screens
 - Live user count display showing how many people are currently connected
 - Prevent duplicate display of your own messages
 
-### 🎨 **Dynamic Visualization**
+### **Dynamic Visualization**
 - Thoughts appear as expanding ripples with character-based animations
 - Screen divided into left and right zones for brain hemisphere-based movement
 - Auto-fade system with 50-second duration (30-second floating + 20-second fade)
 - Smooth animations and visual effects with intelligent zone navigation
 
-### 🔗 **Server Architecture**
+### **Server Architecture**
 - **Backend**: Node.js + Express server for handling real-time communication
 - **Real-time Communication**: Socket.io for instant message broadcasting
 - **Memory Management**: Automatic cleanup of old messages (50-second retention)
