@@ -38,7 +38,7 @@ class SocketManager {
     });
   }
 
-  sendText(text, x, y, translations, id) {
+  sendText(text, x, y, translations, id, sentiment = null) {
     if (!this.isConnected || !this.socket) {
       return false;
     }
@@ -49,6 +49,7 @@ class SocketManager {
       x: x,
       y: y,
       translations: translations,
+      sentiment: sentiment,
     });
     return true;
   }

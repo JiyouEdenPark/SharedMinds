@@ -1,7 +1,7 @@
 class VoiceInput {
   constructor(options) {
     this.micBtn = options.micBtn;
-    this.onAppendText = options.onAppendText || function () {};
+    this.onAppendText = options.onAppendText || function () { };
     this.realtime = !!options.realtime;
     // Choose between local worker ASR and remote proxy ASR
     this.useProxyASR = !!options.useProxyASR;
@@ -139,7 +139,7 @@ class VoiceInput {
       if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
         this.mediaRecorder.stop();
       }
-    } catch {}
+    } catch { }
     if (this.audioStream) {
       this.audioStream.getTracks().forEach((t) => t.stop());
       this.audioStream = null;
@@ -206,9 +206,9 @@ class VoiceInput {
         try {
           this.audioContext = new (window.AudioContext ||
             window.webkitAudioContext)({
-            sampleRate: 16000,
-            latencyHint: "interactive",
-          });
+              sampleRate: 16000,
+              latencyHint: "interactive",
+            });
         } catch (_) {
           this.audioContext = new (window.AudioContext ||
             window.webkitAudioContext)();
@@ -236,16 +236,16 @@ class VoiceInput {
             this._lastVoiceTs = now;
             this._sawVoiceSinceLastFire = true;
           } else {
-            this.maybeTriggerSilenceASR(now).catch(() => {});
+            this.maybeTriggerSilenceASR(now).catch(() => { });
           }
           if (this.realtime) {
             const copy = new Float32Array(input.length);
             copy.set(input);
             this.pcmChunks.push(copy);
           }
-        } catch {}
+        } catch { }
       };
-    } catch {}
+    } catch { }
   }
 
   stopRealtimePcmCapture() {
@@ -254,7 +254,7 @@ class VoiceInput {
     try {
       if (this.processor) this.processor.disconnect();
       if (this.sourceNode) this.sourceNode.disconnect();
-    } catch {}
+    } catch { }
     this.processor = null;
     this.sourceNode = null;
   }
@@ -293,7 +293,7 @@ class VoiceInput {
     if (!this._sawVoiceSinceLastFire) return;
     // run one processing tick (non-blocking)
     if (this.streamingBusy) return;
-    this.processRealtimePcm().catch(() => {});
+    this.processRealtimePcm().catch(() => { });
     this._lastSilenceFireTs = nowTs;
     this._sawVoiceSinceLastFire = false;
   }
@@ -426,7 +426,7 @@ class VoiceInput {
         type: "init",
         modelId: "Xenova/whisper-base",
       });
-    } catch {}
+    } catch { }
   }
 
   runAsrOffMain(float32) {
@@ -470,7 +470,7 @@ class VoiceInput {
         ui.classList.remove("processing");
         this.updateLevelBar(0);
       }
-    } catch {}
+    } catch { }
   }
 
   setUIProcessing(on) {
@@ -479,7 +479,7 @@ class VoiceInput {
       if (!ui) return;
       if (on) ui.classList.add("processing");
       else ui.classList.remove("processing");
-    } catch {}
+    } catch { }
   }
 
   updateLevelUI(rms, zcr = null) {
@@ -505,7 +505,7 @@ class VoiceInput {
       // legacy bar no longer shown; keep safe no-op if present
       const fill = document.querySelector("#recordingUI .level .level-fill");
       if (fill) fill.style.width = pct + "%";
-    } catch {}
+    } catch { }
   }
 
   // --- Mic pulse rings ---
@@ -535,7 +535,7 @@ class VoiceInput {
       ring.addEventListener("animationend", () => {
         if (ring.parentNode) ring.parentNode.removeChild(ring);
       });
-    } catch {}
+    } catch { }
   }
 
   // --- Utility: Encode Float32 PCM to 16-bit WAV Blob ---

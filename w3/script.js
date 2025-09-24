@@ -51,14 +51,14 @@ class SharedRippleThinking {
 
     this.socketManager.onInitialTexts = (texts) => {
       texts.forEach((textObj) => {
-        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations);
+        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations, textObj.sentiment);
       });
     };
 
     this.socketManager.onTextReceived = (textObj) => {
       // 자신이 보낸 메시지는 표시하지 않음
       if (!this.sentMessageIds.has(textObj.id)) {
-        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations);
+        this.showThought(textObj.text, textObj.x, textObj.y, textObj.id, textObj.translations, textObj.sentiment);
       }
     };
 
@@ -77,8 +77,35 @@ class SharedRippleThinking {
     // 먼저 화면에 표시
     const thought = this.showThought(text, x, y);
 
-    // 번역이 완료되면 서버로 전송
-    this.waitForTranslationAndSend(thought);
+    // 감성 분석과 번역이 완료되면 서버로 전송
+    this.waitForAnalysisAndSend(thought);
+  }
+
+  async waitForAnalysisAndSend(thought) {
+    // 감성 분석 수행
+    try {
+      const sentimentResult = await ProxyAI.analyzeTextSentiment(thought.text);
+      thought.sentiment = sentimentResult;
+      console.log("Sentiment analysis result:", sentimentResult);
+    } catch (error) {
+      console.error("Sentiment analysis failed:", error);
+      // fallback 값 설정
+      thought.sentiment = { sentiment: 'neutral', confidence: 50 };
+    }
+
+    // 번역이 완료될 때까지 대기
+    const checkTranslation = () => {
+      if (thought.translations && thought.translations.ko !== null) {
+        // 번역과 감성 분석이 모두 완료되면 서버로 전송
+        this.socketManager.sendText(thought.text, thought.x, thought.y, thought.translations, thought.id, thought.sentiment);
+        // 보낸 메시지 ID를 추적
+        this.sentMessageIds.add(thought.id);
+      } else {
+        // 100ms 후 다시 확인
+        setTimeout(checkTranslation, 100);
+      }
+    };
+    checkTranslation();
   }
 
   async waitForTranslationAndSend(thought) {
@@ -276,7 +303,7 @@ class SharedRippleThinking {
     thought.mainText.currentLanguage = newLanguage;
   }
 
-  showThought(text, x = null, y = null, id = null, existingTranslations = null) {
+  showThought(text, x = null, y = null, id = null, existingTranslations = null, existingSentiment = null) {
     // 랜덤 위치 생성 (입력창 영역 제외)
     const margin = 100;
     const thoughtX =
@@ -307,6 +334,7 @@ class SharedRippleThinking {
       fadeStartTime: Date.now() + 10000, // 약 10초 후 페이드 시작
       ringCount: 0,
       translations: existingTranslations || { ko: null, ja: null, en: null },
+      sentiment: existingSentiment || { sentiment: 'neutral', confidence: 50 }, // 감성 분석 결과
     };
 
     this.thoughts.push(thought);
@@ -404,15 +432,24 @@ class SharedRippleThinking {
           thought.mainText.floatStartTime = now;
           thought.mainText.clickable = true; // 떠다니는 동안 클릭 가능
           thought.mainText.opacity = 1; // 떠다니기 시작할 때 완전히 보이게
+          console.log("thought.sentiment", thought.sentiment);
 
-          // 랜덤 방향 생성 및 정규화
-          const randomX = (Math.random() - 0.5) * 2; // -1 ~ 1
-          const randomY = (Math.random() - 0.5) * 2; // -1 ~ 1
-          const magnitude = Math.sqrt(randomX * randomX + randomY * randomY);
+          // 감성에 따른 방향 결정
+          let directionX, directionY;
+          if (thought.sentiment && thought.sentiment.sentiment === 'emotional') {
+            // 감정적이면 우측으로 움직임
+            directionX = 1; // 우측
+            directionY = (Math.random() - 0.5) * 0.5; // 약간의 수직 움직임
+          } else {
+            // 중립적이면 좌측으로 움직임
+            directionX = -1; // 좌측
+            directionY = (Math.random() - 0.5) * 0.5; // 약간의 수직 움직임
+          }
 
           // 정규화 (단위벡터로 만들기)
-          thought.mainText.floatDirection.x = randomX / magnitude;
-          thought.mainText.floatDirection.y = randomY / magnitude;
+          const magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+          thought.mainText.floatDirection.x = directionX / magnitude;
+          thought.mainText.floatDirection.y = directionY / magnitude;
         }
 
         // 떠다니는 애니메이션

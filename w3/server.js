@@ -55,6 +55,7 @@ io.on("connection", (socket) => {
       id: data.id, // Use client-provided ID
       text: data.text,
       translations: data.translations || null, // 클라이언트에서 번역한 결과 저장
+      sentiment: data.sentiment || { sentiment: 'neutral', confidence: 50 }, // 감성 분석 결과 저장
       timestamp: Date.now(),
       userId: socket.id,
       x: data.x || Math.random() * 800 + 100,
