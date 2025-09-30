@@ -109,6 +109,7 @@ class DataVisualization3D {
         this.morphTargetPositions = new Map(); // id -> Vector3
         this.morphTextStart = new Map(); // id -> Vector3
         this.morphTextTarget = new Map(); // id -> Vector3
+        this.rebuildConnectionsAfterMorph = false; // flag to rebuild lines after morph ends
 
         // Cluster palette and labels (index -> meaning)
         this.clusterPalette = [0xff4d4d, 0xffa64d, 0xffee4d, 0x66ff66, 0x4dd2ff, 0x7a66ff, 0xff66d9];
@@ -578,13 +579,11 @@ class DataVisualization3D {
             }
         }
 
-        // Query bar submit
-        const queryBar = document.getElementById('queryBar');
-        const queryInput = document.getElementById('queryInput');
+
         const advApply = document.getElementById('advApply');
         const advQuery = document.getElementById('advQuery');
         const advSimilarity = document.getElementById('advSimilarity');
-        // language filters removed
+
         const advValence = document.getElementById('advValence');
         const advArousal = document.getElementById('advArousal');
         const senseVision = document.getElementById('senseVision');
@@ -592,64 +591,10 @@ class DataVisualization3D {
         const senseTouch = document.getElementById('senseTouch');
         const senseTaste = document.getElementById('senseTaste');
         const senseSmell = document.getElementById('senseSmell');
-        if (queryBar && queryInput) {
-            queryBar.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const term = (queryInput.value || '').trim();
-                if (!term) return;
-                // If UMAP is available, project related words by embeddings
-                if (window.UMAPProjector && window.ProxyAI) {
-                    await this.visualizeForQuery(term);
-                    const texts = this.testData.map(d => d.text);
-                    const scale = this.layoutAreaRadius * 0.8;
-                    let points2d = null;
-                    let points3d = null;
-                    if (this.is2DMode) {
-                        points2d = await window.UMAPProjector.projectTextsUMAP(texts, { nNeighbors: 15, minDist: 0.1 });
-                    } else {
-                        points3d = await window.UMAPProjector.projectTextsUMAP3D(texts, { nNeighbors: 15, minDist: 0.1 });
-                    }
-                    const ok2d = Array.isArray(points2d) && points2d.length === this.testData.length;
-                    const ok3d = Array.isArray(points3d) && points3d.length === this.testData.length;
-                    if (ok2d || ok3d) {
-                        this.nodePositions = new Map();
-                        for (let i = 0; i < this.testData.length; i++) {
-                            const id = this.testData[i].id;
-                            if (ok2d) {
-                                const p = points2d[i];
-                                this.nodePositions.set(id, new THREE.Vector3(p.x * scale, p.y * scale, 0));
-                            } else {
-                                const p = points3d[i];
-                                this.nodePositions.set(id, new THREE.Vector3(p.x * scale, p.y * scale, p.z * scale));
-                            }
-                        }
-                        // Recompute clusters from original embedding proximity if enabled
-                        if (this.useUMAPClustering) {
-                            const vectors = window.__lastEmbeddingVectors;
-                            const coords = Array.isArray(vectors) && vectors.length === this.testData.length ? vectors : null;
-                            const labels = coords ? this.kMeansCluster(coords, this.numUMAPClusters, 25) : null;
-                            this.clusterAssignments = new Map();
-                            if (labels) {
-                                for (let i = 0; i < this.testData.length; i++) {
-                                    this.clusterAssignments.set(this.testData[i].id, [labels[i]]);
-                                }
-                            }
-                        }
-                        this.resetSceneObjects();
-                        this.createDataObjects();
-                        this.createConnections();
-                        this.ensureClustersAssigned();
-                        this.clustersDirty = true;
-                    }
-                } else {
-                    await this.visualizeForQuery(term);
-                }
-            });
-        }
 
         if (advApply) {
             advApply.addEventListener('click', async () => {
-                const term = (advQuery?.value || queryInput?.value || '').trim();
+                const term = (advQuery?.value || '').trim();
                 if (!term) return;
                 const statusEl = document.getElementById('advStatus');
                 const setStatus = (msg) => { if (statusEl) statusEl.textContent = msg || ''; };
@@ -706,8 +651,14 @@ class DataVisualization3D {
                                 this.morphTargetPositions.set(id, target.clone());
                                 if (text) this.morphTextTarget.set(id, target.clone());
                             }
+                            // Keep canonical nodePositions in sync with UMAP targets
+                            this.nodePositions = new Map();
+                            for (const [id, vec] of this.morphTargetPositions.entries()) {
+                                this.nodePositions.set(id, vec.clone());
+                            }
                             this.isMorphing = true;
                             this.morphProgress = 0;
+                            this.rebuildConnectionsAfterMorph = true; // refresh lines at final positions
                             if (this.useUMAPClustering) {
                                 const vectors = window.__lastEmbeddingVectors;
                                 const coords = Array.isArray(vectors) && vectors.length === this.testData.length ? vectors : null;
@@ -1412,6 +1363,11 @@ class DataVisualization3D {
                 this.morphTargetPositions.clear();
                 this.morphTextStart.clear();
                 this.morphTextTarget.clear();
+                if (this.rebuildConnectionsAfterMorph) {
+                    // Rebuild connections to use final UMAP positions and updated clusters
+                    this.createConnections();
+                    this.rebuildConnectionsAfterMorph = false;
+                }
             }
         }
 
