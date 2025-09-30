@@ -1412,42 +1412,6 @@ class DataVisualization3D {
             this.clustersDirty = false;
         }
 
-        // Highlight connections related to selected node
-        if (this.selectedNodeId != null) {
-            this.connections.forEach(line => {
-                const cl = (this.clusterPalette && typeof line.userData.cluster === 'number') ? this.clusterPalette[line.userData.cluster % this.clusterPalette.length] : 0xffffff;
-                const isConnected = (line.userData.from === this.selectedNodeId || line.userData.to === this.selectedNodeId);
-                if (isConnected) {
-                    // Use cluster color
-                    line.material.color.setHex(cl);
-                    line.material.opacity = 1.0;
-                    line.material.transparent = true;
-                    line.material.blending = THREE.AdditiveBlending;
-                    line.material.depthTest = true;
-                    line.material.needsUpdate = true;
-                } else {
-                    // Dim non-connected lines (keep cluster color)
-                    line.material.color.setHex(cl);
-                    line.material.opacity = line.userData.baseOpacity;
-                    line.material.transparent = true;
-                    line.material.blending = THREE.NormalBlending;
-                    line.material.depthTest = true;
-                    line.material.needsUpdate = true;
-                }
-            });
-        } else {
-            // No selection: restore base appearance
-            this.connections.forEach(line => {
-                const cl = (this.clusterPalette && typeof line.userData.cluster === 'number') ? this.clusterPalette[line.userData.cluster % this.clusterPalette.length] : 0xffffff;
-                line.material.color.setHex(cl);
-                line.material.opacity = line.userData.baseOpacity;
-                line.material.transparent = true;
-                line.material.blending = THREE.NormalBlending;
-                line.material.depthTest = true;
-                line.material.needsUpdate = true;
-            });
-        }
-
         // Handle camera movement to target
         if (this.isMovingToTarget) {
             // Smoothly move camera to target position
