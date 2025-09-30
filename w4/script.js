@@ -75,7 +75,7 @@ class DataVisualization3D {
         this.maxEdgesPerNode = 5; // cap edges among related words per node
         this.secondaryFetchLimit = 20; // how many related words to fetch per related term
         this.secondaryFetchConcurrency = 5; // concurrent fetches to Datamuse
-        this.fullViewMargin3D = 3.0 // margin multiplier for 3D full view framing
+        this.fullViewMargin3D = 1.5 // margin multiplier for 3D full view framing
         this.fullViewMargin2D = 1.2; // margin multiplier for 2D full view framing
         this.nodeSpacingFactor = 0.5; // >1 spreads nodes farther apart globally
         this.verticalSpreadFactor = 1.0; // >1 increases vertical spread (Y), <1 compresses
@@ -1243,7 +1243,7 @@ class DataVisualization3D {
 
         // Rotate only while dragging (left button held)
         if (this.isDragging) {
-            if (!this.is2DMode) {
+            if (!this.is2DMode && !this.isInFocusView) {
                 const yawDelta = deltaX * this.rotationSpeed * 0.5;
                 const pitchDelta = deltaY * this.rotationSpeed * 0.5;
                 this.rotateRoot(yawDelta, pitchDelta);
@@ -1318,14 +1318,22 @@ class DataVisualization3D {
     }
 
     moveToTarget(targetSphere) {
-        // Calculate target camera position to view other texts
-        const spherePosition = targetSphere.position.clone();
-        const direction = spherePosition.clone().normalize();
+        // Calculate camera position just in front of the target sphere and look at it
+        // Use world position to account for rootGroup rotation
+        const sphereWorldPosition = new THREE.Vector3();
+        targetSphere.getWorldPosition(sphereWorldPosition);
 
-        // Position camera at the sphere to look at other texts
-        const distance = 1.5;
-        this.targetPosition = spherePosition.clone().add(direction.multiplyScalar(distance));
-        this.targetLookAt = new THREE.Vector3(0, 0, 0); // Look at center to see other texts
+        const camPosition = this.getActiveCamera().position.clone();
+        const viewDir = camPosition.clone().sub(sphereWorldPosition).normalize(); // from sphere -> camera
+
+        // Position camera slightly in front of the sphere along current view direction, and look at the sphere
+        const distance = 3.5;
+        this.targetPosition = sphereWorldPosition.clone().add(viewDir.multiplyScalar(distance));
+        this.targetLookAt = sphereWorldPosition.clone();
+
+        // Stop any rotational inertia while focusing
+        this.velocityX = 0;
+        this.velocityY = 0;
 
         // Start camera movement
         this.isMovingToTarget = true;
@@ -1380,13 +1388,13 @@ class DataVisualization3D {
         }
 
         // Auto rotate disabled in 2D mode
-        if (!this.is2DMode) {
+        if (!this.is2DMode && !this.isInFocusView && !this.isMovingToTarget) {
             // Auto rotate - slower and smoother (yaw only)
             this.rotateRoot(0.002, 0);
         }
 
         // Apply inertia for smoother movement
-        if (!this.is2DMode && (Math.abs(this.velocityX) > 0.1 || Math.abs(this.velocityY) > 0.1)) {
+        if (!this.is2DMode && !this.isInFocusView && (Math.abs(this.velocityX) > 0.1 || Math.abs(this.velocityY) > 0.1)) {
             this.rotateRoot(
                 this.velocityX * this.rotationSpeed * 0.3,
                 this.velocityY * this.rotationSpeed * 0.3
@@ -1448,29 +1456,6 @@ class DataVisualization3D {
                     line.material.needsUpdate = true;
                 }
             });
-            // Highlight selected sphere
-            this.circles.forEach(sphere => {
-                const material = sphere.material;
-                if (sphere.userData.id === this.selectedNodeId) {
-                    material.color.setHex(0xffffff);
-                    material.emissive = new THREE.Color(0xffffff);
-                    material.emissiveIntensity = 1.0;
-                    material.transparent = true;
-                    material.opacity = 1.0;
-                    material.blending = THREE.AdditiveBlending;
-                    material.depthTest = false;
-                    material.needsUpdate = true;
-                } else {
-                    material.color.setHex(0xffffff);
-                    material.emissive = new THREE.Color(0x000000);
-                    material.emissiveIntensity = 1.0;
-                    material.transparent = true;
-                    material.opacity = 0.9;
-                    material.blending = THREE.NormalBlending;
-                    material.depthTest = true;
-                    material.needsUpdate = true;
-                }
-            });
         } else {
             // No selection: restore base appearance
             this.connections.forEach(line => {
@@ -1481,18 +1466,6 @@ class DataVisualization3D {
                 line.material.blending = THREE.NormalBlending;
                 line.material.depthTest = true;
                 line.material.needsUpdate = true;
-            });
-            // Restore all spheres to base look
-            this.circles.forEach(sphere => {
-                const material = sphere.material;
-                material.color.setHex(0xffffff);
-                material.emissive = new THREE.Color(0x000000);
-                material.emissiveIntensity = 1.0;
-                material.transparent = true;
-                material.opacity = 0.9;
-                material.blending = THREE.NormalBlending;
-                material.depthTest = true;
-                material.needsUpdate = true;
             });
         }
 
@@ -1506,7 +1479,6 @@ class DataVisualization3D {
             if (distanceToTarget < 0.1) {
                 this.isMovingToTarget = false;
                 this.targetPosition = null;
-                this.targetLookAt = null;
             }
 
             // Look at target during movement
@@ -1514,8 +1486,12 @@ class DataVisualization3D {
                 this.getActiveCamera().lookAt(this.targetLookAt);
             }
         } else if (this.isInFocusView) {
-            // In focus view - maintain position and look at center
-            this.getActiveCamera().lookAt(0, 0, 0);
+            // In focus view - maintain position and keep looking at target if available
+            if (this.targetLookAt) {
+                this.getActiveCamera().lookAt(this.targetLookAt);
+            } else {
+                this.getActiveCamera().lookAt(0, 0, 0);
+            }
         } else {
             // Normal camera controls - fixed camera (no pan/zoom)
             if (this.is2DMode) {
