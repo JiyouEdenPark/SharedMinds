@@ -1386,24 +1386,16 @@ class DataVisualization3D {
 
         // Rotation applied via quaternions in handlers/inertia above
 
-        // Update text sprites to face active camera, and ensure 2D draws text on top
+        // Update text sprites to face active camera, and ensure text always renders on top
         const activeCam = this.getActiveCamera();
         this.textSprites.forEach(sprite => {
             sprite.lookAt(activeCam.position);
-            if (this.is2DMode) {
-                // Make text render above spheres in 2D
-                sprite.renderOrder = 2;
-                const mat = sprite.material;
-                mat.depthTest = false;
-                mat.transparent = true;
-                mat.needsUpdate = true;
-            } else {
-                sprite.renderOrder = 0;
-                const mat = sprite.material;
-                mat.depthTest = true;
-                mat.transparent = true;
-                mat.needsUpdate = true;
-            }
+            // Make text render above spheres in both 2D and 3D
+            sprite.renderOrder = 2;
+            const mat = sprite.material;
+            mat.depthTest = false;
+            mat.transparent = true;
+            mat.needsUpdate = true;
         });
 
         // Apply cluster filter visibility when dirty
@@ -1457,7 +1449,7 @@ class DataVisualization3D {
                     this.camera.lookAt(0, 0, 0);
                 }
                 this.circles.forEach(sphere => {
-                    sphere.renderOrder = 0;
+                    sphere.renderOrder = 1; // behind text
                 });
             }
         }
