@@ -71,7 +71,7 @@ class DataVisualization3D {
         ];
 
         // Configurable visualization parameters
-        this.maxWords = 500; // maximum words to visualize
+        this.maxWords = 100; // maximum words to visualize
         this.maxEdgesPerNode = 5; // cap edges among related words per node
         this.secondaryFetchLimit = 20; // how many related words to fetch per related term
         this.secondaryFetchConcurrency = 5; // concurrent fetches to Datamuse
@@ -614,6 +614,7 @@ class DataVisualization3D {
                             taste: senseTaste?.valueAsNumber ?? 50,
                             smell: senseSmell?.valueAsNumber ?? 50,
                         },
+                        similarity: advSimilarity?.valueAsNumber ?? 50,
                         neighbors,
                         minDist,
                     };
@@ -621,7 +622,7 @@ class DataVisualization3D {
                     // Run visualize and then UMAP with tuned params
                     if (window.UMAPProjector && window.ProxyAI) {
                         setStatus('fetching data...');
-                        await this.visualizeForQuery(term);
+                        await this.visualizeForQuery(term, this.advOptions);
                         const texts = this.testData.map(d => d.text);
                         const scale = this.layoutAreaRadius * 0.8;
                         let points2d = null;
@@ -676,7 +677,7 @@ class DataVisualization3D {
                         }
                     } else {
                         setStatus('fetching data...');
-                        await this.visualizeForQuery(term);
+                        await this.visualizeForQuery(term, this.advOptions);
                     }
                     setStatus('');
                 } catch (e) {
@@ -688,10 +689,22 @@ class DataVisualization3D {
         }
     }
 
-    async visualizeForQuery(term) {
-        // Fetch related words from Datamuse API
+    async visualizeForQuery(term, adv = null) {
+        // Fetch related words via LLM generator (replaces Datamuse)
         try {
-            const related = await this.fetchRelatedWords(term, this.maxWords);
+            const llmOk = !!(window.ProxyAI && window.ProxyAI.generateRelatedWordsLLM);
+            const llm = llmOk ? await window.ProxyAI.generateRelatedWordsLLM({
+                keyword: term,
+                maxWords: this.maxWords,
+                similarity: adv?.similarity ?? 50,
+                valence: adv?.valence ?? 50,
+                arousal: adv?.arousal ?? 50,
+                senses: adv?.senses || {},
+            }) : { words: [], relations: [] };
+
+            const related = Array.isArray(llm.words) ? llm.words : [];
+            const llmRels = Array.isArray(llm.relations) ? llm.relations : [];
+
             // Build data and relationships: term at center, related words connected
             const baseColor = 0x00ff88;
             const relatedColor = 0xffffff;
@@ -699,45 +712,40 @@ class DataVisualization3D {
             this.testData = [{ id: 1, text: term, category: 'Query', color: baseColor }];
             let idCounter = 2;
             this.relationships = [];
+            const textToId = new Map();
+            textToId.set(term, 1);
             related.forEach((w) => {
-                this.testData.push({ id: idCounter, text: w.word, category: 'Related', color: relatedColor });
-                this.relationships.push({ from: 1, to: idCounter, strength: Math.min(1, (w.score || 50) / 100) });
-                // Assign clusters by part-of-speech (Datamuse md=p yields tags like 'n','v','adj','adv','prop')
-                const tags = Array.isArray(w.tags) ? w.tags : [];
-                const clusters = this.mapTagsToClusters(tags);
-                if (clusters.length === 0) {
-                    // fallback deterministic mapping
-                    const seed = (w.word.charCodeAt(0) + w.word.length + (w.score || 0)) % 7;
-                    clusters.push(seed);
-                }
-                this.clusterAssignments.set(idCounter, clusters);
-                idCounter += 1;
+                const text = (w && (w.text || w.word)) ? String(w.text || w.word) : '';
+                if (!text) return;
+                const score = typeof w.score === 'number' ? w.score : 50;
+                const id = idCounter++;
+                this.testData.push({ id, text, category: 'Related', color: relatedColor });
+                textToId.set(text, id);
+                // Default weak link to query; may be augmented by llm relations below
+                this.relationships.push({ from: 1, to: id, strength: Math.min(1, score / 100) });
+                // Initial placeholder cluster (k-means will refine later)
+                const seed = (text.charCodeAt(0) + text.length + score) % 7;
+                this.clusterAssignments.set(id, [seed]);
             });
             // Root term cluster
             this.clusterAssignments.set(1, [0]);
 
-            // Build cross-relationships among related words by overlap
-            const relatedTexts = this.testData.filter(d => d.id !== 1).map(d => d.text);
-            const textToId = new Map(this.testData.map(d => [d.text, d.id]));
-            const overlapMap = await this.fetchRelatedMap(relatedTexts, this.secondaryFetchLimit, this.secondaryFetchConcurrency);
-            const addedPairs = new Set();
-            for (const a of relatedTexts) {
-                const neighbors = overlapMap.get(a) || new Map();
-                let edgesAdded = 0;
-                for (const [b, bScore] of neighbors) {
-                    if (!textToId.has(b)) continue; // only connect within our related set
-                    // Unique undirected pair key
+            // Build relationships from LLM relations if provided
+            if (llmRels.length > 0) {
+                const addedPairs = new Set();
+                for (const r of llmRels) {
+                    const a = String(r.from || '');
+                    const b = String(r.to || '');
+                    if (!a || !b) continue;
+                    if (!textToId.has(a) || !textToId.has(b)) continue;
                     const ida = textToId.get(a);
                     const idb = textToId.get(b);
                     if (ida === idb) continue;
                     const key = ida < idb ? `${ida}-${idb}` : `${idb}-${ida}`;
                     if (addedPairs.has(key)) continue;
-                    // Add relationship with strength based on neighbor score normalized
-                    const strength = Math.min(1, (bScore || 50) / 100);
+                    const strength = Math.min(1, Math.max(0.05, (typeof r.strength === 'number' ? r.strength : 0.5)));
                     this.relationships.push({ from: ida, to: idb, strength });
                     addedPairs.add(key);
-                    edgesAdded += 1;
-                    if (edgesAdded >= this.maxEdgesPerNode) break;
                 }
             }
 
