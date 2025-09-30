@@ -700,10 +700,9 @@ class DataVisualization3D {
                 valence: adv?.valence ?? 50,
                 arousal: adv?.arousal ?? 50,
                 senses: adv?.senses || {},
-            }) : { words: [], relations: [] };
+            }) : { words: [] };
 
             const related = Array.isArray(llm.words) ? llm.words : [];
-            const llmRels = Array.isArray(llm.relations) ? llm.relations : [];
 
             // Build data and relationships: term at center, related words connected
             const baseColor = 0x00ff88;
@@ -714,40 +713,20 @@ class DataVisualization3D {
             this.relationships = [];
             const textToId = new Map();
             textToId.set(term, 1);
-            related.forEach((w) => {
-                const text = (w && (w.text || w.word)) ? String(w.text || w.word) : '';
+            related.forEach((word) => {
+                const text = String(word || '').trim();
                 if (!text) return;
-                const score = typeof w.score === 'number' ? w.score : 50;
                 const id = idCounter++;
                 this.testData.push({ id, text, category: 'Related', color: relatedColor });
                 textToId.set(text, id);
-                // Default weak link to query; may be augmented by llm relations below
-                this.relationships.push({ from: 1, to: id, strength: Math.min(1, score / 100) });
+                // Link each word to the query term
+                this.relationships.push({ from: 1, to: id, strength: 0.5 });
                 // Initial placeholder cluster (k-means will refine later)
-                const seed = (text.charCodeAt(0) + text.length + score) % 7;
+                const seed = (text.charCodeAt(0) + text.length) % 7;
                 this.clusterAssignments.set(id, [seed]);
             });
             // Root term cluster
             this.clusterAssignments.set(1, [0]);
-
-            // Build relationships from LLM relations if provided
-            if (llmRels.length > 0) {
-                const addedPairs = new Set();
-                for (const r of llmRels) {
-                    const a = String(r.from || '');
-                    const b = String(r.to || '');
-                    if (!a || !b) continue;
-                    if (!textToId.has(a) || !textToId.has(b)) continue;
-                    const ida = textToId.get(a);
-                    const idb = textToId.get(b);
-                    if (ida === idb) continue;
-                    const key = ida < idb ? `${ida}-${idb}` : `${idb}-${ida}`;
-                    if (addedPairs.has(key)) continue;
-                    const strength = Math.min(1, Math.max(0.05, (typeof r.strength === 'number' ? r.strength : 0.5)));
-                    this.relationships.push({ from: ida, to: idb, strength });
-                    addedPairs.add(key);
-                }
-            }
 
             // Compute layout (2D or 3D depending on current mode)
             this.computeLayoutPositions(this.is2DMode);

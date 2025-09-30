@@ -1,7 +1,7 @@
 (function () {
   /**
    * Generate related words via LLM using a keyword and advanced options.
-   * The model should return a compact JSON object with words and optional relations.
+   * The model returns an array of related words as strings.
    *
    * @param {Object} params
    * @param {string} params.keyword
@@ -15,7 +15,7 @@
    * @param {number} [params.senses.touch=50]
    * @param {number} [params.senses.taste=50]
    * @param {number} [params.senses.smell=50]
-   * @returns {Promise<{words: {text:string, score?:number}[], relations?: {from:string, to:string, strength?:number}[]}>}
+   * @returns {Promise<{words: string[]}>}
    */
   async function generateRelatedWordsLLM(params) {
     const url = "https://itp-ima-replicate-proxy.web.app/api/create_n_get";
@@ -64,8 +64,8 @@ Apply the following parameters carefully to generate words with appropriate nuan
 IMPORTANT: Carefully balance ALL parameters to generate words that authentically reflect the specified nuances.
 
 Return ONLY valid JSON with this structure:
-{"words": [{"text": string, "score": number}], "relations": [{"from": string, "to": string, "strength": number}]}
-No markdown formatting.`;
+["word1", "word2", "word3", ...]
+Just an array of words as strings. No markdown formatting.`;
 
     const data = {
       model: "openai/gpt-5",
@@ -93,12 +93,11 @@ No markdown formatting.`;
       if (Array.isArray(json.output)) textOut = json.output.join("");
       else if (typeof json.output === "string") textOut = json.output;
       const parsed = JSON.parse(textOut);
-      const words = Array.isArray(parsed.words) ? parsed.words : [];
-      const relations = Array.isArray(parsed.relations) ? parsed.relations : [];
-      return { words, relations };
+      const words = Array.isArray(parsed) ? parsed : [];
+      return { words };
     } catch (e) {
       console.error("generateRelatedWordsLLM error", e);
-      return { words: [], relations: [] };
+      return { words: [] };
     }
   }
   /**
