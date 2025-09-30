@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Data Visualization</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+
+
+        <!-- 3D Visualization Container -->
+        <div class="visualization-container">
+            <canvas id="threeCanvas"></canvas>
+            <div class="view-toggle" role="group" aria-label="View mode">
+                <button id="view2DBtn" class="view-btn active" aria-pressed="true">2D</button>
+                <button id="view3DBtn" class="view-btn" aria-pressed="false">3D</button>
+            </div>
+            <button id="viewFullBtn" class="view-full-btn" aria-label="Fit full view">Full</button>
+            <div class="zoom-controls" aria-label="2D zoom controls">
+                <button id="zoomIn2D" class="zoom-btn" title="Zoom in">+</button>
+                <button id="zoomOut2D" class="zoom-btn" title="Zoom out">−</button>
+            </div>
+            <div id="clusterFilter" class="cluster-filter" role="group" aria-label="Cluster filter">
+                <button class="cluster-chip" data-cluster="0" title="Actions (Verbs)"></button>
+                <button class="cluster-chip" data-cluster="1" title="Attributes (Adjectives)"></button>
+                <button class="cluster-chip" data-cluster="2" title="Modifiers (Adverbs)"></button>
+                <button class="cluster-chip" data-cluster="3" title="Entities/Concepts (Nouns)"></button>
+                <button class="cluster-chip" data-cluster="4" title="Proper/Named Entities"></button>
+                <button class="cluster-chip" data-cluster="5" title="Multi-category"></button>
+                <button class="cluster-chip" data-cluster="6" title="Other/Unknown"></button>
+                <button class="cluster-clear" id="clusterClearBtn" title="Clear filter">All</button>
+            </div>
+
+
+            <!-- Advanced Search Bar (full width top) -->
+            <div id="advancedPanel" class="advanced-panel advanced-bar">
+                <div class="adv-group adv-group--query">
+                    <div class="adv-row">
+                        <input id="advQuery" class="adv-input" type="text" placeholder="Enter a word..." />
+                        <button id="advApply" class="adv-apply" type="button">Trawl</button>
+                        <span id="advStatus" class="adv-status" aria-live="polite"></span>
+                    </div>
+                </div>
+                <div class="adv-group adv-group--filters">
+                    <div class="adv-row senses-row">
+                        <label class="side-label">Vision</label>
+                        <input id="senseVision" type="range" min="0" max="100" value="50" />
+                        <label class="side-label">Audition</label>
+                        <input id="senseAudition" type="range" min="0" max="100" value="50" />
+                        <label class="side-label">Touch</label>
+                        <input id="senseTouch" type="range" min="0" max="100" value="50" />
+                        <label class="side-label">Taste</label>
+                        <input id="senseTaste" type="range" min="0" max="100" value="50" />
+                        <label class="side-label">Smell</label>
+                        <input id="senseSmell" type="range" min="0" max="100" value="50" />
+                    </div>
+                    <span class="adv-divider"></span>
+                    <div class="adv-row metrics-row">
+                        <label class="side-label">Similar</label>
+                        <input id="advSimilarity" type="range" min="0" max="100" value="50" />
+                        <label class="side-label">Novel</label>
+                        <span class="adv-divider"></span>
+                        <label class="side-label">Valence</label>
+                        <input id="advValence" type="range" min="0" max="100" value="50" />
+                        <span class="adv-divider"></span>
+                        <label class="side-label">Arousal</label>
+                        <input id="advArousal" type="range" min="0" max="100" value="50" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    <!-- Replicate proxy helpers (embeddings) -->
+    <script src="proxyAI.js"></script>
+    <!-- UMAP library for dimensionality reduction (UMD global: window.UMAP) -->
+    <script src="https://unpkg.com/umap-js@1.4.0/lib/umap-js.min.js"></script>
+    <!-- UMAP projector wrapper -->
+    <script src="umapProjector.js"></script>
+    <script>
+        // Check if THREE.js is loaded
+        if (typeof THREE === 'undefined') {
+            console.error('THREE.js failed to load');
+            document.body.innerHTML = '<div style="color: white; text-align: center; padding: 50px;">THREE.js 라이브러리 로딩 실패. 페이지를 새로고침해주세요.</div>';
+        } else {
+            console.log('THREE.js loaded successfully');
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>
