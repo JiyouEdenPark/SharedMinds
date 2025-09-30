@@ -301,7 +301,6 @@ class DataVisualization3D {
         context.textBaseline = 'middle';
 
         // Draw text with outline
-        context.strokeText(text, 256, 64);
         context.fillText(text, 256, 64);
 
         // Create texture
