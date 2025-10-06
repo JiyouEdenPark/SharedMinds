@@ -208,12 +208,11 @@ class SharedRippleThinking {
                 return;
               }
               if (prev !== 0 && updatedAtMs > prev) {
-                console.log('found', found, updatedAtMs, prev);
-                found._updatedAtMs = updatedAtMs;
                 const nowTs = Date.now();
                 this.resetThoughtLifecycle(found, nowTs);
                 this.startResurface(found, nowTs);
               }
+              found._updatedAtMs = updatedAtMs;
             } catch { }
           });
         });
