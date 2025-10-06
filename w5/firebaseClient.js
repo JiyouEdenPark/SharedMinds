@@ -9,7 +9,12 @@ import {
     serverTimestamp,
     onSnapshot,
     query,
-    orderBy
+    orderBy,
+    doc,
+    updateDoc,
+    getDocs,
+    where,
+    limit
 } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -36,7 +41,12 @@ export {
     serverTimestamp,
     onSnapshot,
     query,
-    orderBy
+    orderBy,
+    doc,
+    updateDoc,
+    getDocs,
+    where,
+    limit
 };
 
 

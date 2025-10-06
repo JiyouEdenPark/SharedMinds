@@ -68,6 +68,8 @@ class SharedRippleThinking {
 
     // 먼저 화면에 표시
     const thought = this.showThought(text, x, y);
+    thought.createdByMe = true;
+
 
     // 번역 완료 시 서버로 전송/저장 (반구 분석 제외)
     this.waitForTranslationAndSend(thought);
@@ -111,6 +113,7 @@ class SharedRippleThinking {
         x: thought.x,
         y: thought.y,
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
         translations: thought.translations || null,
       });
     } catch (_) { }
@@ -120,7 +123,7 @@ class SharedRippleThinking {
     (async () => {
       try {
         const mod = await import('./firebaseClient.js');
-        const { db, collection, onSnapshot, query, orderBy } = mod;
+        const { db, collection, onSnapshot, query, orderBy, doc, updateDoc, serverTimestamp } = mod;
         const q = query(collection(db, 'shared_thoughts'), orderBy('createdAt', 'asc'));
         onSnapshot(q, (snap) => {
           // 첫 스냅샷: 기존 문서 전부 렌더
@@ -141,7 +144,12 @@ class SharedRippleThinking {
               // Skip expired items on refresh (past total lifetime)
               const totalLife = (this.defaultLifecycle && this.defaultLifecycle.totalLifetimeMs) || 0;
               if (totalLife > 0 && (Date.now() - createdAtMs) > totalLife) return;
-              this.showThought(data.text, data.x, data.y, id, data.translations || null, null, createdAtMs);
+              const t = this.showThought(data.text, data.x, data.y, id, data.translations || null, null, createdAtMs);
+              try {
+                const up = data.updatedAt;
+                const updatedAtMs = up && typeof up.toMillis === 'function' ? up.toMillis() : 0;
+                if (t) t._updatedAtMs = updatedAtMs || 0;
+              } catch { }
               this.displayedDocIds.add(id);
             });
             this.firestoreInitialLoaded = true;
@@ -167,8 +175,46 @@ class SharedRippleThinking {
             // Skip if already expired by the time we receive it
             const totalLife = (this.defaultLifecycle && this.defaultLifecycle.totalLifetimeMs) || 0;
             if (totalLife > 0 && (Date.now() - createdAtMs) > totalLife) return;
-            this.showThought(data.text, data.x, data.y, id, data.translations || null, null, createdAtMs);
+            const t = this.showThought(data.text, data.x, data.y, id, data.translations || null, null, createdAtMs);
+            try {
+              const up = data.updatedAt;
+              const updatedAtMs = up && typeof up.toMillis === 'function' ? up.toMillis() : 0;
+              if (t) t._updatedAtMs = updatedAtMs || 0;
+            } catch { }
             this.displayedDocIds.add(id);
+          });
+
+          // updatedAt 변경 시 라이프사이클 리셋/떠오르기 반영
+          changes.forEach((change) => {
+            if (!change || change.type !== 'modified') return;
+            const doc = change.doc;
+            try { if (doc && doc.metadata && doc.metadata.hasPendingWrites) return; } catch { }
+            const data = doc && typeof doc.data === 'function' ? (doc.data() || {}) : {};
+            const id = (data && data.id) || (doc && doc.id) || undefined;
+            if (!id) return;
+            const found = this.thoughts.find(t => String(t.id) === String(id));
+            if (!found) return;
+            try {
+              const up = data.updatedAt;
+              const updatedAtMs = up && typeof up.toMillis === 'function' ? up.toMillis() : 0;
+              if (!updatedAtMs) return;
+              const prev = found._updatedAtMs || 0;
+              // If the item was created by me, skip only when updatedAt is not newer than what I already saw
+              if (found.createdByMe && updatedAtMs <= prev) return;
+              // If this update was initiated by this client (awaiting flag), just record and skip triggering
+              if (found._awaitingUpdatedAt) {
+                found._updatedAtMs = updatedAtMs;
+                found._awaitingUpdatedAt = false;
+                return;
+              }
+              if (prev !== 0 && updatedAtMs > prev) {
+                console.log('found', found, updatedAtMs, prev);
+                found._updatedAtMs = updatedAtMs;
+                const nowTs = Date.now();
+                this.resetThoughtLifecycle(found, nowTs);
+                this.startResurface(found, nowTs);
+              }
+            } catch { }
           });
         });
       } catch (_) { }
@@ -332,10 +378,10 @@ class SharedRippleThinking {
         clickY >= thought.y - clickHeight / 2 &&
         clickY <= thought.y + clickHeight / 2) {
         const now = Date.now();
-        if (thought.water && (thought.water.isUnder || thought.water.progress > 0)) {
-          this.startResurface(thought, now);
-          return;
-        }
+        this.resetThoughtLifecycle(thought, now);
+        this.startResurface(thought, now);
+        this.persistUpdatedAt(thought);
+        return;
       }
     }
 
@@ -361,7 +407,10 @@ class SharedRippleThinking {
         clickX <= thought.x + clickWidth / 2 &&
         clickY >= thought.y - clickHeight / 2 &&
         clickY <= thought.y + clickHeight / 2) {
-
+        const now = Date.now();
+        this.resetThoughtLifecycle(thought, now);
+        this.startResurface(thought, now);
+        this.persistUpdatedAt(thought);
         this.changeTextLanguage(thought);
         break;
       }
@@ -688,6 +737,51 @@ class SharedRippleThinking {
     if (!w.isUnder && !w.animStart && w.nextAutoSinkAt && now >= w.nextAutoSinkAt) {
       this.startSink(thought, now);
       w.nextAutoSinkAt = 0;
+    }
+  }
+
+  // Restart lifecycle (ripples, timers, removal) from a given time
+  resetThoughtLifecycle(thought, now) {
+    const rp = (thought.lifecycle && typeof thought.lifecycle.ripplePhaseMs === 'number')
+      ? thought.lifecycle.ripplePhaseMs
+      : this.defaultLifecycle.ripplePhaseMs;
+    // Preserve visual continuity: avoid sudden fade-out on click
+    const currentOpacity = thought.mainText.opacity;
+    thought.mainText.created = now - this.elementFadeInMs; // ensures opacity calc = 1
+    thought.fadeStartTime = now + rp;
+    thought._removal = null;
+    thought.ripples = [];
+    thought.ringCount = 0;
+    thought.lastRippleTime = now - 1000; // allow immediate ripple creation
+    thought.mainText.opacity = Math.max(1, currentOpacity || 0);
+    if (thought.water) {
+      thought.water.initialSinkStarted = false;
+      // keep progress; startResurface will animate to surface
+    }
+  }
+
+  // Persist updatedAt to Firestore so all clients can reflect the reset
+  async persistUpdatedAt(thought) {
+    try {
+      const mod = await import('./firebaseClient.js');
+      const { db, collection, query, where, limit, getDocs, doc, updateDoc, serverTimestamp } = mod;
+      if (thought._updatedPending) return; // debounce
+      thought._awaitingUpdatedAt = true; // mark self-initiated update
+      // Resolve Firestore doc id by querying on custom id field if we don't have docId yet
+      let targetDocId = thought.docId || null;
+      if (!targetDocId) {
+        const q = query(collection(db, 'shared_thoughts'), where('id', '==', thought.id), limit(1));
+        const snap = await getDocs(q);
+        snap.forEach(d => { if (!targetDocId) targetDocId = d.id; });
+        thought.docId = targetDocId || thought.docId;
+      }
+      if (!targetDocId) return; // still not found; skip
+      const targetDoc = doc(db, 'shared_thoughts', String(targetDocId));
+      thought._updatedPending = true;
+      await updateDoc(targetDoc, { updatedAt: serverTimestamp() });
+    } catch { }
+    finally {
+      thought._updatedPending = false;
     }
   }
 
