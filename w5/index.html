@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thinking Ripples - 생각의 파동</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="input-section">
+      <div class="mic-wrap">
+        <button id="micBtn" aria-label="Start voice input"></button>
+        <div id="micPulse" aria-hidden="true"></div>
+      </div>
+      <div class="text-input">
+        <input id="textInput" type="text" placeholder="Type your thought" />
+        <button id="submitBtn" type="button" aria-label="Throw">Throw</button>
+      </div>
+    </div>
+    <canvas id="rippleCanvas"></canvas>
+  </div>
+
+
+  <script type="module" src="firebaseClient.js"></script>
+  <script src="proxyASR.js"></script>
+  <script src="voice.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

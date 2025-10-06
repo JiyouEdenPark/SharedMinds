@@ -1,0 +1,262 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  background: #ffffff;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.input-section {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.recording-ui {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+}
+
+.recording-ui.active {
+  display: inline-flex;
+}
+
+.recording-ui .level {
+  width: 120px;
+  height: 8px;
+  background: #e9e9e9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.recording-ui .level .level-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2e7d32, #f9a825, #c62828);
+  transition: width 60ms linear;
+}
+
+.recording-ui .spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #666666;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: rec-spin 0.8s linear infinite;
+  visibility: hidden;
+}
+
+.recording-ui.processing .spinner {
+  visibility: visible;
+}
+
+@keyframes rec-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#micBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.114);
+  /* light gray stroke */
+  background: #ffffff;
+  /* white fill */
+  color: transparent;
+  /* hide text/emoji if any */
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
+  display: inline-block;
+}
+
+#micBtn:hover {
+  border-color: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+#micBtn.recording {
+  border-color: rgba(14, 247, 255, 0);
+  box-shadow: 0 0 0 3px rgba(139, 251, 255, 0);
+}
+
+/* Mic pulse container and rings */
+.mic-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+}
+
+#micPulse {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#micPulse .ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(014, 247, 255, 0.224);
+  background: rgba(0, 0, 0, 0);
+  opacity: 0.45;
+  animation: mic-pulse var(--pulse-duration, 800ms) ease-in-out forwards;
+}
+
+@keyframes mic-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+    /* fade-in start like text */
+  }
+
+  20% {
+    opacity: var(--start-opacity, 0.45);
+    /* reach full like text fade-in */
+  }
+
+  60% {
+    opacity: var(--start-opacity, 0.45);
+    /* hold before fading out */
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(var(--to-scale, 2.1));
+    opacity: 0;
+    /* fade-out end like text */
+  }
+}
+
+#micBtn.recording {
+  /* keep existing styles, ensure visual stays above input */
+}
+
+/* Text input row */
+.text-input {
+  display: inline-flex;
+  align-items: center;
+}
+
+#textInput {
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-right: none;
+  border-top-left-radius: 18px;
+  border-bottom-left-radius: 18px;
+  background: #ffffff;
+  color: #000000;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 280px;
+}
+
+#textInput::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+#textInput:hover {
+  border-color: rgba(0, 0, 0, 0.4);
+}
+
+#textInput:focus {
+  border-color: rgba(0, 0, 0, 0.4);
+}
+
+#submitBtn {
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-right-radius: 18px;
+  border-bottom-right-radius: 18px;
+  background: #f4f4f4;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+#submitBtn:hover {
+  background: #e9e9e9;
+  border-color: rgba(0, 0, 0, 0.4);
+}
+
+#submitBtn:active {
+  background: #e0e0e0;
+}
+
+#rippleCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+/* 떠다니는 텍스트를 위한 커서 변경 */
+#rippleCanvas.floating-text {
+  cursor: pointer;
+}
+
+/* 연결 상태 표시 */
+/* removed connection status in serverless mode */
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .input-section {
+    left: 50%;
+    right: auto;
+    bottom: 20px;
+    top: auto;
+    transform: translateX(-50%);
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #textInput {
+    min-width: 0;
+    width: 70vw;
+  }
+
+  #submitBtn {
+    width: auto;
+  }
+
+  .connection-status {
+    top: 10px;
+    right: 10px;
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+}
