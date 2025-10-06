@@ -135,16 +135,25 @@ class SharedRippleThinking {
               const id = (data && data.id) || (doc && doc.id) || undefined;
               if (!id) return;
               if (this.displayedDocIds.has(id)) return;
-              let createdAtMs = Date.now();
+              // Prefer updatedAt as the base time; fallback to createdAt; then now
+              let baseMs = 0;
               try {
-                const ca = data.createdAt;
-                if (ca && typeof ca.toMillis === 'function') createdAtMs = ca.toMillis();
-                else if (typeof ca === 'number') createdAtMs = ca;
-              } catch { createdAtMs = Date.now(); }
+                const up = data.updatedAt;
+                if (up && typeof up.toMillis === 'function') baseMs = up.toMillis();
+                else if (typeof up === 'number') baseMs = up;
+              } catch { baseMs = 0; }
+              if (!baseMs) {
+                try {
+                  const ca = data.createdAt;
+                  if (ca && typeof ca.toMillis === 'function') baseMs = ca.toMillis();
+                  else if (typeof ca === 'number') baseMs = ca;
+                } catch { baseMs = 0; }
+              }
+              if (!baseMs) baseMs = Date.now();
               // Skip expired items on refresh (past total lifetime)
               const totalLife = (this.defaultLifecycle && this.defaultLifecycle.totalLifetimeMs) || 0;
-              if (totalLife > 0 && (Date.now() - createdAtMs) > totalLife) return;
-              const t = this.showThought(data.text, data.x, data.y, id, data.translations || null, null, createdAtMs);
+              if (totalLife > 0 && (Date.now() - baseMs) > totalLife) return;
+              const t = this.showThought(data.text, data.x, data.y, id, data.translations || null, null, baseMs);
               try {
                 const up = data.updatedAt;
                 const updatedAtMs = up && typeof up.toMillis === 'function' ? up.toMillis() : 0;
@@ -166,16 +175,25 @@ class SharedRippleThinking {
             const id = (data && data.id) || (doc && doc.id) || undefined;
             if (!id) return;
             if (this.sentMessageIds.has(id) || this.displayedDocIds.has(id)) return;
-            let createdAtMs = Date.now();
+            // Prefer updatedAt as base time for lifecycle; fallback to createdAt; then now
+            let baseMs = 0;
             try {
-              const ca = data.createdAt;
-              if (ca && typeof ca.toMillis === 'function') createdAtMs = ca.toMillis();
-              else if (typeof ca === 'number') createdAtMs = ca;
-            } catch { createdAtMs = Date.now(); }
+              const up = data.updatedAt;
+              if (up && typeof up.toMillis === 'function') baseMs = up.toMillis();
+              else if (typeof up === 'number') baseMs = up;
+            } catch { baseMs = 0; }
+            if (!baseMs) {
+              try {
+                const ca = data.createdAt;
+                if (ca && typeof ca.toMillis === 'function') baseMs = ca.toMillis();
+                else if (typeof ca === 'number') baseMs = ca;
+              } catch { baseMs = 0; }
+            }
+            if (!baseMs) baseMs = Date.now();
             // Skip if already expired by the time we receive it
             const totalLife = (this.defaultLifecycle && this.defaultLifecycle.totalLifetimeMs) || 0;
-            if (totalLife > 0 && (Date.now() - createdAtMs) > totalLife) return;
-            const t = this.showThought(data.text, data.x, data.y, id, data.translations || null, null, createdAtMs);
+            if (totalLife > 0 && (Date.now() - baseMs) > totalLife) return;
+            const t = this.showThought(data.text, data.x, data.y, id, data.translations || null, null, baseMs);
             try {
               const up = data.updatedAt;
               const updatedAtMs = up && typeof up.toMillis === 'function' ? up.toMillis() : 0;
