@@ -13,6 +13,10 @@ class ThreeJSThinkingSpace {
     this.cameraDistance = 6; // 중심으로부터의 거리
     this.cameraSpeed = 0.01; // 회전 속도
     
+    // 자동 회전 설정
+    this.autoRotate = true; // 자동 회전 활성화
+    this.autoRotateSpeed = 0.003; // 오른쪽(시계방향) 회전 속도
+    
     this.animationId = null;
     
     // 물결 효과 관련 변수들
@@ -107,11 +111,6 @@ class ThreeJSThinkingSpace {
       console.log('폰트가 로드되었습니다.');
     }, undefined, (error) => {
       console.log('폰트 로드 실패:', error);
-      // 폰트 로드 실패 시 기본 폰트 사용
-      this.fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-        this.font = font;
-        console.log('기본 폰트가 로드되었습니다.');
-      });
     });
   }
 
@@ -306,7 +305,7 @@ class ThreeJSThinkingSpace {
         time: { value: 0 },
         strength: { value: 0.0 }, // 초기값 0으로 설정
         blurRadius: { value: 0.0 }, // 초기값 0으로 설정
-        tint: { value: new THREE.Color(0x1a6fa0) },
+        tint: { value: new THREE.Color(0xFFFFFF) },
         tintAmount: { value: 0.0 }, // 초기값 0으로 설정
         resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
         waterDepth: { value: 0.0 } // 물에 잠긴 정도를 나타내는 변수 추가
@@ -754,6 +753,12 @@ class ThreeJSThinkingSpace {
     
     const now = Date.now();
     
+    // 자동 카메라 회전 (마우스 드래그 중이 아닐 때만)
+    if (this.autoRotate && !this.isMouseDown) {
+      this.cameraAngleX -= this.autoRotateSpeed; // 오른쪽으로 회전
+      this.updateCameraPosition();
+    }
+
     // 물결 애니메이션 업데이트 (항상 실행)
     this.updateRipples();
     
