@@ -4,17 +4,35 @@ let poses = [];
 let handPoseModel;
 let hands = [];
 let prayerFrames = 0;
-let prayerDetected = false;
 let lastHandBySide = { left: null, right: null };
 let bowFrames = 0;
-let bowDetected = false;
 const normalizeName = (n) => (n || '').replace(/_/g, '').toLowerCase();
+
+// Helpers to keep camera aspect ratio and align coordinates
+function getVideoSize() {
+  if (video && video.elt && video.elt.videoWidth && video.elt.videoHeight) {
+    return { vw: video.elt.videoWidth, vh: video.elt.videoHeight };
+  }
+  if (video && video.width && video.height) {
+    return { vw: video.width, vh: video.height };
+  }
+  return { vw: width, vh: height };
+}
+
+function getVideoViewport() {
+  const { vw, vh } = getVideoSize();
+  const scale = Math.min(width / vw, height / vh);
+  const dw = vw * scale;
+  const dh = vh * scale;
+  const dx = (width - dw) / 2;
+  const dy = (height - dh) / 2;
+  return { dx, dy, dw, dh, scale, vw, vh };
+}
 
 function setup() {
   pixelDensity(1);
   createCanvas(windowWidth, windowHeight);
   video = createCapture({ video: { facingMode: 'user' }, audio: false });
-  video.size(width, height);
   video.hide();
 
   bodyPose = ml5.bodyPose(video, { flipHorizontal: true }, () => {
@@ -39,7 +57,7 @@ function setup() {
       handPoseModel.detectStart(video, (results) => {
         hands = results || [];
       });
-    } 
+    }
   });
 
   frameRate(30);
@@ -47,12 +65,18 @@ function setup() {
 
 function draw() {
   background(0);
-  drawWebcam();
+  const vp = getVideoViewport();
+  drawWebcam(vp);
+  // Draw overlays aligned to the video coordinate system (no mirror here)
+  push();
+  translate(vp.dx, vp.dy);
+  scale(vp.scale, vp.scale);
   drawSkeleton();
   drawHands();
+  pop();
   drawPrayerIndicator();
-  updateHeadDown();
   drawHeadDownIndicator();
+  updateAudioTriggers();
 }
 
 function drawSkeleton() {
@@ -62,23 +86,21 @@ function drawSkeleton() {
   noFill();
 
   const connections = [
-    ['left_shoulder','right_shoulder'],
-    ['left_shoulder','left_elbow'],
-    ['left_elbow','left_wrist'],
-    ['right_shoulder','right_elbow'],
-    ['right_elbow','right_wrist'],
-    ['left_hip','right_hip'],
-    ['left_shoulder','left_hip'],
-    ['right_shoulder','right_hip'],
-    ['left_hip','left_knee'],
-    ['left_knee','left_ankle'],
-    ['right_hip','right_knee'],
-    ['right_knee','right_ankle'],
-    ['nose','left_eye'],
-    ['nose','right_eye'],
-    ['left_eye','left_ear'],
-    ['right_eye','right_ear']
-  ].map(([a,b]) => [normalizeName(a), normalizeName(b)]);
+    ['left_shoulder', 'right_shoulder'],
+    ['left_shoulder', 'left_elbow'],
+    ['left_elbow', 'left_wrist'],
+    ['right_shoulder', 'right_elbow'],
+    ['right_elbow', 'right_wrist'],
+    ['left_hip', 'right_hip'],
+    ['left_shoulder', 'left_hip'],
+    ['right_shoulder', 'right_hip'],
+    ['left_hip', 'left_knee'],
+    ['left_knee', 'left_ankle'],
+    ['right_hip', 'right_knee'],
+    ['right_knee', 'right_ankle'],
+    // eye-region connections omitted
+  ].filter(([a, b]) => !a.includes('eye') && !b.includes('eye'))
+    .map(([a, b]) => [normalizeName(a), normalizeName(b)]);
 
   for (let i = 0; i < poses.length; i++) {
     const kpList = poses[i].keypoints || [];
@@ -105,20 +127,18 @@ function drawSkeleton() {
   }
 }
 
-function drawWebcam() {
-  if (!video) return;
+function drawWebcam(vp) {
+  if (!video || !vp) return;
   push();
-  translate(width, 0);
+  // Mirror horizontally inside the fitted viewport
+  translate(vp.dx + vp.dw, vp.dy);
   scale(-1, 1);
-  image(video, 0, 0, width, height);
+  image(video, 0, 0, vp.dw, vp.dh);
   pop();
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  if (video) {
-    video.size(width, height);
-  }
 }
 
 function drawHands() {
@@ -156,13 +176,13 @@ function drawHands() {
   noFill();
 
   const fingerChains = [
-    ['wrist','thumb_cmc','thumb_mcp','thumb_ip','thumb_tip'],
-    ['wrist','index_finger_mcp','index_finger_pip','index_finger_dip','index_finger_tip'],
-    ['wrist','middle_finger_mcp','middle_finger_pip','middle_finger_dip','middle_finger_tip'],
-    ['wrist','ring_finger_mcp','ring_finger_pip','ring_finger_dip','ring_finger_tip'],
-    ['wrist','pinky_finger_mcp','pinky_finger_pip','pinky_finger_dip','pinky_finger_tip']
+    ['wrist', 'thumb_cmc', 'thumb_mcp', 'thumb_ip', 'thumb_tip'],
+    ['wrist', 'index_finger_mcp', 'index_finger_pip', 'index_finger_dip', 'index_finger_tip'],
+    ['wrist', 'middle_finger_mcp', 'middle_finger_pip', 'middle_finger_dip', 'middle_finger_tip'],
+    ['wrist', 'ring_finger_mcp', 'ring_finger_pip', 'ring_finger_dip', 'ring_finger_tip'],
+    ['wrist', 'pinky_finger_mcp', 'pinky_finger_pip', 'pinky_finger_dip', 'pinky_finger_tip']
   ];
-  const palmChain = ['thumb_cmc','index_finger_mcp','middle_finger_mcp','ring_finger_mcp','pinky_finger_mcp'];
+  const palmChain = ['thumb_cmc', 'index_finger_mcp', 'middle_finger_mcp', 'ring_finger_mcp', 'pinky_finger_mcp'];
 
   for (let m = 0; m < maps.length; m++) {
     const map = maps[m] || {};
@@ -207,7 +227,7 @@ function getHandMap(hand) {
 }
 
 function computePalmCenter(map) {
-  const names = ['wrist','thumb_cmc','index_finger_mcp','middle_finger_mcp','ring_finger_mcp','pinky_finger_mcp'];
+  const names = ['wrist', 'thumb_cmc', 'index_finger_mcp', 'middle_finger_mcp', 'ring_finger_mcp', 'pinky_finger_mcp'];
   let sumX = 0, sumY = 0, n = 0;
   for (let i = 0; i < names.length; i++) {
     const p = map[normalizeName(names[i])];
@@ -219,14 +239,77 @@ function computePalmCenter(map) {
 
 function areMapsClose(leftMap, rightMap) {
   if (!leftMap || !rightMap) return false;
+  const { vw, vh } = getVideoSize();
   const ca = computePalmCenter(leftMap);
   const cb = computePalmCenter(rightMap);
   if (!ca || !cb) return false;
   const dx = ca.x - cb.x;
   const dy = ca.y - cb.y;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  const threshold = Math.min(width, height) * 0.10;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const threshold = Math.min(vw, vh) * 0.10;
   return dist < threshold;
+}
+
+function distance(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function inferHandSides(entries) {
+  if (!entries || entries.length === 0) return entries;
+  const wrists = getBodyWrists();
+  const bodyMap = getBodyMap();
+  let shoulderCenterX = null;
+  if (bodyMap && bodyMap['leftshoulder'] && bodyMap['rightshoulder']) {
+    shoulderCenterX = (bodyMap['leftshoulder'].x + bodyMap['rightshoulder'].x) / 2;
+  }
+
+  const enriched = entries.map((e) => {
+    const pc = computePalmCenter(e.map) || { x: Number.POSITIVE_INFINITY, y: Number.POSITIVE_INFINITY };
+    const dl = wrists && wrists.left ? distance(pc, wrists.left) : Number.POSITIVE_INFINITY;
+    const dr = wrists && wrists.right ? distance(pc, wrists.right) : Number.POSITIVE_INFINITY;
+    let pref = null;
+    if (isFinite(dl) || isFinite(dr)) {
+      pref = (dl <= dr) ? 'left' : 'right';
+    } else if (shoulderCenterX != null && isFinite(pc.x)) {
+      pref = (pc.x <= shoulderCenterX) ? 'left' : 'right';
+    }
+    return { ...e, pc, dl, dr, pref };
+  });
+
+  const assigned = { left: null, right: null };
+  for (let i = 0; i < enriched.length; i++) {
+    const e = enriched[i];
+    let side = e.side;
+    if (e.pref && !assigned[e.pref]) side = e.pref;
+    if (!side) side = e.pref;
+    if (side && !assigned[side]) {
+      e.side = side;
+      assigned[side] = e;
+    }
+  }
+
+  const unresolved = enriched.filter(e => !e.side);
+  if (unresolved.length > 0) {
+    unresolved.sort((a, b) => (a.pc.x || 0) - (b.pc.x || 0));
+    for (let i = 0; i < unresolved.length; i++) {
+      const e = unresolved[i];
+      const candidate = (i === 0) ? 'left' : 'right';
+      if (!assigned[candidate]) {
+        e.side = candidate;
+        assigned[candidate] = e;
+      } else {
+        const other = candidate === 'left' ? 'right' : 'left';
+        if (!assigned[other]) {
+          e.side = other;
+          assigned[other] = e;
+        }
+      }
+    }
+  }
+
+  return enriched.map(({ score, map, side }) => ({ score, map, side }));
 }
 
 function selectTopTwoHands(allHands) {
@@ -244,9 +327,12 @@ function selectTopTwoHands(allHands) {
   }
   entries.sort((a, b) => b.score - a.score);
 
+  // Improve/override side using body wrists/shoulders
+  const inferred = inferHandSides(entries);
+
   // Update memory per side
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
+  for (let i = 0; i < inferred.length; i++) {
+    const e = inferred[i];
     if (e.side === 'left') lastHandBySide.left = { map: e.map, time: now };
     if (e.side === 'right') lastHandBySide.right = { map: e.map, time: now };
   }
@@ -255,8 +341,8 @@ function selectTopTwoHands(allHands) {
   const result = { left: null, right: null };
 
   // Prefer current detections by side
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
+  for (let i = 0; i < inferred.length; i++) {
+    const e = inferred[i];
     if (e.side === 'left' && !result.left) result.left = e.map;
     if (e.side === 'right' && !result.right) result.right = e.map;
   }
@@ -289,7 +375,8 @@ function isPrayerPose() {
     const ca = computePalmCenter(a);
     const cb = computePalmCenter(b);
     if (ca && cb) {
-      const comps = ['wrist','thumb_cmc','index_finger_mcp','middle_finger_mcp','ring_finger_mcp','pinky_finger_mcp'];
+      const { vw, vh } = getVideoSize();
+      const comps = ['wrist', 'thumb_cmc', 'index_finger_mcp', 'middle_finger_mcp', 'ring_finger_mcp', 'pinky_finger_mcp'];
       let sum = 0, n = 0;
       for (let i = 0; i < comps.length; i++) {
         const pa = a[normalizeName(comps[i])];
@@ -297,25 +384,26 @@ function isPrayerPose() {
         if (pa && pb) {
           const dx = pa.x - pb.x;
           const dy = pa.y - pb.y;
-          sum += Math.sqrt(dx*dx + dy*dy);
+          sum += Math.sqrt(dx * dx + dy * dy);
           n++;
         }
       }
       if (n >= 3) {
         const avgDist = sum / n;
-        const threshold = Math.min(width, height) * 0.10;
+        const threshold = Math.min(vw, vh) * 0.10;
         const centerDy = Math.abs(ca.y - cb.y);
-        const verticalThreshold = Math.min(width, height) * 0.08;
+        const verticalThreshold = Math.min(vw, vh) * 0.08;
         if ((avgDist < threshold) && (centerDy < verticalThreshold)) return true;
       }
     }
   }
   const wrists = getBodyWrists();
   if (wrists && wrists.left && wrists.right) {
+    const { vw, vh } = getVideoSize();
     const dx = wrists.left.x - wrists.right.x;
     const dy = wrists.left.y - wrists.right.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const wristThresh = Math.min(width, height) * 0.08;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const wristThresh = Math.min(vw, vh) * 0.08;
     return dist < wristThresh;
   }
   return false;
@@ -340,6 +428,7 @@ function getBodyWrists() {
 function isHeadDown() {
   const map = getBodyMap();
   if (!map) return false;
+  const { vw, vh } = getVideoSize();
   const ls = map['leftshoulder'];
   const rs = map['rightshoulder'];
   const lh = map['lefthip'];
@@ -354,9 +443,9 @@ function isHeadDown() {
     const hCy = (lh.y + rh.y) / 2;
     const dx = sCx - hCx;
     const dy = sCy - hCy;
-    torsoLen = Math.sqrt(dx*dx + dy*dy);
+    torsoLen = Math.sqrt(dx * dx + dy * dy);
   } else {
-    torsoLen = Math.min(width, height) * 0.3;
+    torsoLen = Math.min(vw, vh) * 0.3;
   }
   const verticalDelta = nose.y - sCy;
   const threshold = torsoLen * 0.25;
@@ -365,17 +454,8 @@ function isHeadDown() {
   return (verticalDelta > threshold) && (lateralOffset < lateralLimit);
 }
 
-function updateHeadDown() {
-  if (isHeadDown()) {
-    bowFrames = Math.min(bowFrames + 1, 20);
-  } else {
-    bowFrames = Math.max(bowFrames - 1, 0);
-  }
-  bowDetected = bowFrames >= 5;
-}
-
 function drawHeadDownIndicator() {
-  if (!bowDetected) return;
+  if (!isHeadDown()) return;
   console.log("bow detected");
   push();
   noFill();
@@ -424,4 +504,107 @@ function drawPrayerIndicator() {
   textSize(16);
   text('PRAYER', 24, 40);
   pop();
+}
+
+// --- Audio playback on detections ---
+let audioPrayer = null;
+let audioBow = null;
+let prayerSoundPlaying = false;
+let bowSoundPlaying = false;
+let prayerTimeoutId = null;
+let bowTimeoutId = null;
+let prevPrayerState = false;
+let prevBowState = false;
+
+function fadeOutAudio(audio, durationMs, done) {
+  const initialVol = Math.max(0, Math.min(1, audio.volume || 1));
+  const steps = 20;
+  const stepTime = Math.max(10, Math.floor(durationMs / steps));
+  let step = 0;
+  function tick() {
+    step++;
+    const newVol = Math.max(0, initialVol * (1 - step / steps));
+    try { audio.volume = newVol; } catch (e) { }
+    if (step >= steps) {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.volume = initialVol;
+      } catch (e) { }
+      if (done) done();
+      return;
+    }
+    setTimeout(tick, stepTime);
+  }
+  tick();
+}
+
+function ensureAudioInitialized() {
+  if (!audioPrayer) {
+    audioPrayer = new Audio('sound-1.mp3');
+    audioPrayer.preload = 'auto';
+    audioPrayer.crossOrigin = 'anonymous';
+  }
+  if (!audioBow) {
+    audioBow = new Audio('sound-2.mp3');
+    audioBow.preload = 'auto';
+    audioBow.crossOrigin = 'anonymous';
+    try { audioBow.volume = 2 / 3; } catch (e) { }
+  }
+}
+
+function playPrayerSound() {
+  ensureAudioInitialized();
+  if (prayerSoundPlaying) return;
+  prayerSoundPlaying = true;
+  if (prayerTimeoutId) clearTimeout(prayerTimeoutId);
+  try { audioPrayer.currentTime = 0; } catch (e) { }
+  audioPrayer.play().catch(() => { });
+  prayerTimeoutId = setTimeout(() => {
+    try { audioPrayer.pause(); audioPrayer.currentTime = 0; } catch (e) { }
+    prayerSoundPlaying = false;
+  }, 10000);
+}
+
+function playBowSound() {
+  ensureAudioInitialized();
+  if (bowSoundPlaying) return;
+  bowSoundPlaying = true;
+  if (bowTimeoutId) clearTimeout(bowTimeoutId);
+  try { audioBow.currentTime = 0; audioBow.volume = 2 / 3; } catch (e) { }
+  audioBow.play().catch(() => { });
+  const TOTAL_MS = 30000;
+  const FADE_MS = 1500;
+  const startFadeAt = Math.max(0, TOTAL_MS - FADE_MS);
+  bowTimeoutId = setTimeout(() => {
+    fadeOutAudio(audioBow, FADE_MS, () => { bowSoundPlaying = false; });
+  }, startFadeAt);
+}
+
+function updateAudioTriggers() {
+  const prayerNow = isPrayerPose();
+  if (prayerNow && !prevPrayerState) {
+    playPrayerSound();
+  }
+  prevPrayerState = prayerNow;
+
+  const bowNow = isHeadDown();
+  if (bowNow && !prevBowState) {
+    console.log("bow detected");
+    playBowSound();
+  }
+  prevBowState = bowNow;
+}
+
+// Best-effort unlock for autoplay policies (tap/click once)
+function mousePressed() {
+  ensureAudioInitialized();
+  try {
+    audioPrayer.play().then(() => { audioPrayer.pause(); audioPrayer.currentTime = 0; }).catch(() => { });
+    audioBow.play().then(() => { audioBow.pause(); audioBow.currentTime = 0; }).catch(() => { });
+  } catch (e) { }
+}
+
+function touchStarted() {
+  mousePressed();
 }
