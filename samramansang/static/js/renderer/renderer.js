@@ -5,10 +5,10 @@ export default class Renderer {
         this.overlay = overlayElement;
         this.ctx = overlayElement.getContext('2d');
         this.isInitialized = false;
-        
+
         // 기본 키포인트 렌더러
         this.keypointRenderer = new KeypointRenderer(overlayElement);
-        
+
         // 렌더링 옵션
         this.renderOptions = {
             showKeypoints: true,      // 키포인트 점 표시
@@ -21,7 +21,7 @@ export default class Renderer {
         this.calibrationMaskImage = null;
         this.calibrationMaskAlpha = 0.35;
         this.calibrationContours = null; // Array of [[x,y], ...]
-        
+
         // id별 KeypointRenderer (스무딩 상태 포함)
         this.kprById = {}; // id -> KeypointRenderer
     }
@@ -35,7 +35,7 @@ export default class Renderer {
         this.overlay.style.left = "0";
         this.overlay.style.pointerEvents = "none";
         this.isInitialized = true;
-        
+
         // 키포인트 렌더러 초기화
         this.keypointRenderer.initialize(width, height);
     }
@@ -57,10 +57,6 @@ export default class Renderer {
                 if (!entry.kpts) continue;
                 const trackId = typeof entry.id === 'string' ? entry.id : `track_${i}`;
                 let keypoints = entry.kpts;
-                if (this.renderOptions.smoothing || this.renderOptions.interpolation) {
-                    const kr = this._getKeypointRendererForId(trackId);
-                    keypoints = kr.smoothKeypoints(keypoints);
-                }
                 // 각 포즈를 순차적으로 그린다
                 this.draw(keypoints, null);
             }
@@ -69,13 +65,6 @@ export default class Renderer {
 
         if (data.kpts) {
             let keypoints = data.kpts;
-            
-            // 스무딩 및 보간 적용
-            if (this.renderOptions.smoothing || this.renderOptions.interpolation) {
-                const kr = this._getKeypointRendererForId('default');
-                keypoints = kr.smoothKeypoints(keypoints);
-            }
-
             this.draw(keypoints);
         }
     }
@@ -90,7 +79,7 @@ export default class Renderer {
 
     draw(keypoints) {
         // 캘리브레이션 마스크/윤곽선 그리기 (배경)
-            if (this.calibrationMaskImage) {
+        if (this.calibrationMaskImage) {
             this.ctx.save();
             this.ctx.globalAlpha = this.calibrationMaskAlpha;
             this.ctx.drawImage(this.calibrationMaskImage, 0, 0, this.overlay.width, this.overlay.height);
@@ -111,12 +100,12 @@ export default class Renderer {
             }
             this.ctx.restore();
         }
-       
+
         // 스켈레톤 그리기
         if (this.renderOptions.showSkeleton) {
             this.keypointRenderer.drawSkeleton(keypoints);
         }
-        
+
         // 키포인트 그리기
         if (this.renderOptions.showKeypoints) {
             this.keypointRenderer.drawKeypoints(keypoints);
