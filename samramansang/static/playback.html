@@ -25,11 +25,9 @@
 </head>
 <body>
     <div class="container">
-        <h1>Pose Player (JSONL)</h1>
+        <h1>Pose Player</h1>
         <div class="card">
             <div class="controls">
-                <label for="fileInput">Select File (JSONL):</label>
-                <input type="file" id="fileInput" accept=".jsonl,.txt,application/jsonl">
                 <label for="datasetSelect">Dataset File:</label>
                 <select id="datasetSelect">
                     <option value="">Select from dataset...</option>
@@ -49,23 +47,12 @@
                 <button id="playBtn" disabled>Play</button>
                 <button id="pauseBtn" disabled>Pause</button>
                 <button id="stopBtn" disabled>Stop</button>
-                <a id="loadSegments" href="#" style="margin-left:auto;">Load Segments</a>
-                <button id="autoSegBtn" disabled>Auto Play Segments</button>
-                <button id="stopAutoBtn" disabled>Stop Auto</button>
-                <label style="margin-left:8px;"><input type="checkbox" id="smartOrder"> Select Similar Segments</label>
-                <label style="margin-left:8px;"><input type="checkbox" id="smoothBoundary" checked> Smooth Boundary</label>
-                <label>Blending Frames</label>
-                <input id="blendFrames" type="number" value="8" min="0" max="60" style="width:70px;">
             </div>
             <div class="row status">
                 <div id="status">Please select a file.</div>
             </div>
             <div class="row status" id="fileInfo" style="display:none;">
                 <div id="fileInfoText"></div>
-            </div>
-            <div class="row hint">
-                <div>- Each JSONL line: { ts, width, height, seq_id, frame_id, fps, kpts:[[x,y,score]x17] }</div>
-                <div>- Segment JSON: training/cluster_and_segment.py output (runs/segments.json)</div>
             </div>
         </div>
 
