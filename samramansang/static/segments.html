@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segment Player</title>
+    <style>
+        body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial; margin:0; padding:20px; background:#0f172a; color:#e2e8f0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { margin: 0 0 16px; font-size: 22px; }
+        .card { background:#111827; border:1px solid #1f2937; border-radius: 10px; padding:16px; margin-bottom: 16px; }
+        .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+        label { opacity:0.9; }
+        input, select, button { background:#0b1220; color:#e2e8f0; border:1px solid #243041; border-radius:8px; padding:8px 10px; }
+        button { cursor:pointer; }
+        button:disabled { opacity:0.5; cursor:not-allowed; }
+        .status { font-size: 13px; opacity:0.9; }
+        .stage { position: relative; display: inline-block; }
+        canvas { display:block; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎞️ Segment Player</h1>
+        <div class="card">
+            <div class="row">
+                <button id="autoLoadBtn">Auto Load</button>
+                <label for="speedSelect">Speed:</label>
+                <select id="speedSelect">
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1.0x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2.0x</option>
+                </select>
+                <label>Target FPS</label>
+                <input id="targetFps" type="number" value="30" min="1" max="120" style="width:70px;">
+                <label style="margin-left:8px;"><input type="checkbox" id="useMetaFps"> Use Meta FPS</label>
+                <button id="playSegBtn" disabled style="margin-left:auto;">Play Segments</button>
+                <button id="playSelectedBtn" disabled>Play Selected</button>
+                <button id="playRandomBtn">Random Play (10)</button>
+                <button id="saveFinalBtn" title="Save final list with selected segments">Save Final List</button>
+                <button id="stopSegBtn" disabled>Stop</button>
+                <label style="margin-left:8px;"><input type="checkbox" id="smartOrder"> Select Similar Segments</label>
+                <label style="margin-left:8px;"><input type="checkbox" id="smoothBoundary" checked> Smooth Boundary</label>
+                <label>Blending Frames</label>
+                <input id="blendFrames" type="number" value="8" min="0" max="60" style="width:70px;">
+            </div>
+            <div class="row status" style="margin-top:8px;">
+                <div id="status">Please click the auto load button.</div>
+            </div>
+            <div class="row status" id="fileInfo" style="display:none;">
+                <div id="fileInfoText"></div>
+            </div>
+        </div>
+
+        <!-- 세그먼트 거리 정보 섹션 -->
+        <div class="card" id="distanceSection" style="display:none;">
+            <h3>🔍 Segment Distance Analysis</h3>
+            <div class="row">
+                <button id="calculateDistancesBtn">Calculate Distances</button>
+                <button id="loadDistancesBtn" disabled>Load Distance Info</button>
+                <label for="topK">Top K:</label>
+                <input id="topK" type="number" value="3" min="1" max="10" style="width:60px;">
+                <label>Segment Source</label>
+                <select id="segmentSource">
+                    <option value="original" selected>Original/Representative</option>
+                    <option value="final">Final</option>
+                </select>
+            </div>
+            <div class="row status" style="margin-top:8px;">
+                <div id="distanceStatus">Run distance calculation or load existing distance information.</div>
+            </div>
+            <div id="distanceInfo" style="display:none;">
+                <div class="row status">
+                    <div id="distanceInfoText"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; gap:16px; align-items:flex-start;">
+                <div style="width:260px;">
+                    <!-- 라벨 필터링 섹션 -->
+                    <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid #1f2937;">
+                        <div style="font-size:14px; font-weight:600; margin-bottom:8px;">🏷️ Label Filter</div>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <label style="display:flex; align-items:center; gap:6px; font-size:13px;">
+                                <input type="checkbox" id="showAllLabels" checked>
+                                <span>All Labels</span>
+                            </label>
+                            <div id="labelFilters" style="display:flex; flex-direction:column; gap:4px; max-height:120px; overflow-y:auto;"></div>
+                        </div>
+                    </div>
+                    <div id="segList" style="max-height:600px; overflow:auto; border-right:1px solid #1f2937; padding-right:8px;"></div>
+                </div>
+                <div class="stage-col" style="width:900px;">
+                    <div class="stage" style="position:relative; width:900px; height:600px;">
+                        <div id="segBadge" style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.5); padding:6px 10px; border-radius:6px; font-size:12px; z-index:5;">Segment: -</div>
+                        <canvas id="overlay" style="width:900px; height:600px; pointer-events:none;"></canvas>
+                    </div>
+                    <div class="stage-bar" style="width:900px; margin-top:8px; display:flex; align-items:center; gap:8px;">
+                        <input type="range" id="frameSlider" min="0" max="0" value="0" style="flex:1;">
+                        <span id="frameLabel" class="status">0/0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/static/js/segments-player.js"></script>
+</body>
+</html>
+
+

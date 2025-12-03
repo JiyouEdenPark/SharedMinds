@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pose Training System</title>
+    <style>
+        body {
+            font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial;
+            margin: 0;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            margin: 0 0 16px;
+            font-size: 24px;
+        }
+        
+        h2 {
+            margin: 0 0 16px;
+            font-size: 20px;
+        }
+        
+        h3 {
+            margin: 0 0 12px;
+            font-size: 16px;
+        }
+        
+        .training-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .config-panel, .monitor-panel {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 10px;
+            padding: 16px;
+        }
+        
+        .config-section {
+            margin-bottom: 20px;
+        }
+        
+        .config-section h3 {
+            margin-bottom: 12px;
+            color: #e2e8f0;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #243041;
+            border-radius: 8px;
+            background: #0b1220;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+        
+        .form-group small {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            opacity: 0.75;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            border: 1px solid #243041;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #0b1220;
+            color: #e2e8f0;
+            flex: 1;
+        }
+        
+        button:hover:not(:disabled) {
+            background: #1e293b;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .start-training {
+            background: #0b1220;
+        }
+        
+        .start-training:hover:not(:disabled) {
+            background: #1e293b;
+        }
+        
+        .stop-training {
+            background: #0b1220;
+        }
+        
+        .stop-training:hover:not(:disabled) {
+            background: #1e293b;
+        }
+        
+        .status {
+            text-align: center;
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 10px;
+            background: #111827;
+            border: 1px solid #1f2937;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .progress-section {
+            margin-bottom: 16px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #0b1220;
+            border: 1px solid #243041;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .log-container {
+            background: #0b1220;
+            border: 1px solid #243041;
+            border-radius: 8px;
+            padding: 12px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        
+        .log-info { color: #74c0fc; }
+        .log-success { color: #51cf66; }
+        .log-warning { color: #ffd43b; }
+        .log-error { color: #ff6b6b; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .stat-card {
+            background: #0b1220;
+            border: 1px solid #243041;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .dataset-info {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .dataset-files {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .dataset-file {
+            padding: 5px 10px;
+            margin: 2px 0;
+            background: #0b1220;
+            border: 1px solid #243041;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 768px) {
+            .training-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Pose Training System</h1>
+        
+        <div class="status" id="status">
+            Ready for training...
+        </div>
+        
+        <div class="dataset-info">
+            <h3>📁 Dataset Information</h3>
+            <div id="datasetStats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFiles">0</div>
+                    <div class="stat-label">Total Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSize">0 MB</div>
+                    <div class="stat-label">Total Size</div>
+                </div>
+            </div>
+            <div class="dataset-files" id="datasetFiles">
+                <!-- Dataset file list will be displayed here -->
+            </div>
+        </div>
+        
+        <div class="training-grid">
+            <div class="config-panel">
+                <h2>⚙️ Training Configuration</h2>
+                
+                <div class="config-section">
+                    <h3>Training Mode</h3>
+                    <div class="form-group">
+                        <label for="trainingMode">Training Mode:</label>
+                        <select id="trainingMode">
+                            <option value="full">Full Pipeline (Training → Embedding → Clustering)</option>
+                            <option value="clustering">Clustering Only (Use Existing Embeddings)</option>
+                        </select>
+                        <small style="color: #ccc; font-size: 0.8em;">Full Pipeline: Train from scratch, Clustering Only: Use existing model</small>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>Data Settings</h3>
+                    <div class="form-group">
+                        <label for="dataGlob">Data Path:</label>
+                        <input type="text" id="dataGlob" value="dataset/raw/*.jsonl">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="window">Window Size:</label>
+                            <input type="number" id="window" value="32" min="1" max="128">
+                        </div>
+                        <div class="form-group">
+                            <label for="stride">Stride:</label>
+                            <input type="number" id="stride" value="8" min="1" max="32">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section" id="trainingParamsSection">
+                    <h3>Training Hyperparameters</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="epochs">Number of Epochs:</label>
+                            <input type="number" id="epochs" value="100" min="1" max="1000">
+                        </div>
+                        <div class="form-group">
+                            <label for="batchSize">Batch Size:</label>
+                            <input type="number" id="batchSize" value="128" min="1" max="512">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="learningRate">Learning Rate:</label>
+                            <input type="number" id="learningRate" value="0.001" step="0.0001" min="0.0001" max="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="weightDecay">Weight Decay:</label>
+                            <input type="number" id="weightDecay" value="0.0001" step="0.0001" min="0" max="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="temperature">Temperature:</label>
+                            <input type="number" id="temperature" value="0.1" step="0.01" min="0.01" max="1.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="workers">Number of Workers:</label>
+                            <input type="number" id="workers" value="4" min="1" max="16">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section" id="clusteringOnlySection" style="display: none;">
+                    <h3>Embedding Settings</h3>
+                    <div class="form-group">
+                        <label for="embeddingsPath">Embedding File Path:</label>
+                        <input type="text" id="embeddingsPath" value="training/runs/embeddings.npy">
+                        <small style="color: #ccc; font-size: 0.8em;">Path to existing embedding file (e.g., training/runs/embeddings.npy)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="modelPath">Model File Path:</label>
+                        <input type="text" id="modelPath" value="runs/simclr/best.pt">
+                        <small style="color: #ccc; font-size: 0.8em;">Path to existing trained model file</small>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>Clustering Settings</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="algorithm">Algorithm:</label>
+                            <select id="algorithm">
+                                <option value="hdbscan">HDBSCAN</option>
+                                <option value="kmeans">K-Means</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="clustersGroup">
+                            <label for="clusters">Number of Clusters:</label>
+                            <input type="number" id="clusters" value="8" min="2" max="50">
+                        </div>
+                    </div>
+                    
+                    <!-- HDBSCAN specific settings -->
+                    <div id="hdbscanSettings" class="form-row">
+                        <div class="form-group">
+                            <label for="hdbMinCluster">Minimum Cluster Size:</label>
+                            <input type="number" id="hdbMinCluster" value="5" min="3" max="50">
+                            <small style="color: #ccc; font-size: 0.8em;">Minimum number of windows to be recognized as a cluster</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="hdbMinSamples">Minimum Samples:</label>
+                            <input type="number" id="hdbMinSamples" value="3" min="2" max="20">
+                            <small style="color: #ccc; font-size: 0.8em;">Minimum number of neighbors to define a core point</small>
+                        </div>
+                    </div>
+                    
+                    <!-- K-means specific settings -->
+                    <div id="kmeansSettings" class="form-row" style="display: none;">
+                        <div class="form-group">
+                            <label for="kmeansInit">Initialization Method:</label>
+                            <select id="kmeansInit">
+                                <option value="k-means++">k-means++</option>
+                                <option value="random">Random</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="kmeansNInit">Number of Initializations:</label>
+                            <input type="number" id="kmeansNInit" value="10" min="1" max="20">
+                            <small style="color: #ccc; font-size: 0.8em;">Number of times to try different initial values</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Common segmentation settings -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="minLength">Minimum Segment Length:</label>
+                            <input type="number" id="minLength" value="5" min="1" max="50">
+                            <small style="color: #ccc; font-size: 0.8em;">Segments shorter than this will be merged</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="mergeGap">Merge Gap:</label>
+                            <input type="number" id="mergeGap" value="2" min="1" max="10">
+                            <small style="color: #ccc; font-size: 0.8em;">Segments within this gap will be merged</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Split criterion settings -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="splitCriterion">Split Criterion:</label>
+                            <select id="splitCriterion">
+                                <option value="neutral">Neutral (Neutral Pose)</option>
+                                <option value="energy">Energy (Motion Energy)</option>
+                                <option value="var">Variance</option>
+                                <option value="jerk">Jerk (Acceleration Change)</option>
+                                <option value="proto">Prototype (Cluster Center)</option>
+                                <option value="rules">Rules (Keypoint Rules)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxLenWindows">Maximum Segment Length:</label>
+                            <input type="number" id="maxLenWindows" value="10" min="5" max="50">
+                            <small style="color: #ccc; font-size: 0.8em;">Segments longer than this will be split</small>
+                        </div>
+                    </div>
+                    <!-- Edge trimming settings -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="trimEdges">Edge Trimming (toward neutral):</label>
+                            <select id="trimEdges">
+                                <option value="on">Enabled</option>
+                                <option value="off">Disabled</option>
+                            </select>
+                            <small style="color: #ccc; font-size: 0.8em;">Fine-tune segment start/end based on neutral pose</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="edgeRadius">Edge Search Radius:</label>
+                            <input type="number" id="edgeRadius" value="3" min="1" max="10">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>Representative Segment Selection</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="repMethod">Selection Method:</label>
+                            <select id="repMethod">
+                                <option value="per_label_k">Top-K per Label</option>
+                                <option value="threshold">Threshold Diversity (Cosine Distance)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="repK">K per Label:</label>
+                            <input type="number" id="repK" value="5" min="1" max="50">
+                            <small style="color: #ccc; font-size: 0.8em;">Number of representatives per label in per_label_k method</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="repThr">Threshold (Distance):</label>
+                            <input type="number" id="repThr" value="0.25" step="0.01" min="0.0" max="2.0">
+                            <small style="color: #ccc; font-size: 0.8em;">Minimum cosine distance (1-similarity) in threshold method</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="startButton" class="start-training">🚀 Start Training</button>
+                    <button id="stopButton" class="stop-training" disabled>⏹️ Stop Training</button>
+                </div>
+            </div>
+            
+            <div class="monitor-panel">
+                <h2>📊 Training Monitoring</h2>
+                
+                <div class="progress-section">
+                    <h3>Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div id="progressText">Ready...</div>
+                </div>
+                
+                <div class="stats-grid" id="trainingStats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentEpoch">0</div>
+                        <div class="stat-label">Current Epoch</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentLoss">0.000</div>
+                        <div class="stat-label">Current Loss</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bestLoss">0.000</div>
+                        <div class="stat-label">Best Loss</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="elapsedTime">00:00</div>
+                        <div class="stat-label">Elapsed Time</div>
+                    </div>
+                </div>
+                
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry log-info">Training system is ready.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/training.js"></script>
+</body>
+</html>

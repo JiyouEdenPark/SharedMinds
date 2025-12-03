@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pose Player</title>
+    <style>
+        body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial; margin:0; padding:20px; background:#0f172a; color:#e2e8f0; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        h1 { margin: 0 0 16px; font-size: 24px; }
+        .controls { display:flex; gap:12px; align-items:center; flex-wrap: wrap; margin-bottom: 16px; }
+        .controls > * { font-size: 14px; }
+        .card { background:#111827; border:1px solid #1f2937; border-radius: 10px; padding:16px; margin-bottom: 16px; }
+        .row { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
+        label { opacity:0.9; }
+        input[type="file"] { color:#e2e8f0; }
+        select, button, input[type="number"], input[type="text"] { background:#0b1220; color:#e2e8f0; border:1px solid #243041; border-radius:8px; padding:8px 10px; }
+        button { cursor:pointer; }
+        button:disabled { opacity:0.5; cursor:not-allowed; }
+        .status { font-size: 13px; opacity:0.9; }
+        .canvas-wrap { position: relative; display: inline-block; }
+        canvas { display:block; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+        .hint { font-size: 13px; opacity:0.75; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📼 Pose Player (JSONL)</h1>
+        <div class="card">
+            <div class="controls">
+                <label for="fileInput">Select File (JSONL):</label>
+                <input type="file" id="fileInput" accept=".jsonl,.txt,application/jsonl">
+                <label for="datasetSelect">Dataset File:</label>
+                <select id="datasetSelect">
+                    <option value="">Select from dataset...</option>
+                </select>
+                <button id="loadDatasetBtn" disabled>Load</button>
+                <button id="refreshDatasetBtn">Refresh</button>
+                <label for="speedSelect">Speed:</label>
+                <select id="speedSelect">
+                    <option value="0.25">0.25x</option>
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1.0x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2.0x</option>
+                </select>
+                <label><input type="checkbox" id="loopCheck"> Loop</label>
+                <button id="playBtn" disabled>Play</button>
+                <button id="pauseBtn" disabled>Pause</button>
+                <button id="stopBtn" disabled>Stop</button>
+                <a id="loadSegments" href="#" style="margin-left:auto;">Load Segments</a>
+                <button id="autoSegBtn" disabled>Auto Play Segments</button>
+                <button id="stopAutoBtn" disabled>Stop Auto</button>
+                <label style="margin-left:8px;"><input type="checkbox" id="smartOrder"> Select Similar Segments</label>
+                <label style="margin-left:8px;"><input type="checkbox" id="smoothBoundary" checked> Smooth Boundary</label>
+                <label>Blending Frames</label>
+                <input id="blendFrames" type="number" value="8" min="0" max="60" style="width:70px;">
+            </div>
+            <div class="row status">
+                <div id="status">Please select a file.</div>
+            </div>
+            <div class="row status" id="fileInfo" style="display:none;">
+                <div id="fileInfoText"></div>
+            </div>
+            <div class="row hint">
+                <div>- Each JSONL line: { ts, width, height, seq_id, frame_id, fps, kpts:[[x,y,score]x17] }</div>
+                <div>- Segment JSON: training/cluster_and_segment.py output (runs/segments.json)</div>
+            </div>
+        </div>
+
+        <div class="card" id="stageCard" style="display:none;">
+            <div class="canvas-wrap">
+                <canvas id="overlay"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/static/js/playback.js"></script>
+</body>
+</html>
+
