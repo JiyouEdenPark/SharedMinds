@@ -13,8 +13,6 @@ const fileInfoDiv = document.getElementById('fileInfo');
 const fileInfoText = document.getElementById('fileInfoText');
 const segBadge = document.getElementById('segBadge');
 const segList = document.getElementById('segList');
-const targetFpsInput = document.getElementById('targetFps');
-const useMetaFps = document.getElementById('useMetaFps');
 const frameSlider = document.getElementById('frameSlider');
 const frameLabel = document.getElementById('frameLabel');
 
@@ -263,14 +261,14 @@ function showFileInfo(loadedFiles) {
 
 async function autoLoadFiles() {
     try {
-        setStatus('Auto-loading required files...');
+        setStatus('Loading required files...');
 
         const response = await fetch('/segments/auto-load');
         const data = await response.json();
 
         if (data.status === 'ok') {
             const loadedFiles = data.loaded_files;
-            showFileInfo(loadedFiles);
+            // showFileInfo(loadedFiles);
 
             // Process JSONL file
             if (loadedFiles.jsonl) {
@@ -373,11 +371,11 @@ async function autoLoadFiles() {
             }
 
         } else {
-            setStatus('Auto-load failed');
+            setStatus('Load failed');
         }
     } catch (error) {
-        console.error('Auto-load error:', error);
-        setStatus('An error occurred while auto-loading files.');
+        console.error('Load error:', error);
+        setStatus('An error occurred while loading files.');
     }
 }
 
