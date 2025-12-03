@@ -416,7 +416,7 @@ async function startAll() {
     await fetchSegmentsFinal();
 
     // WebSocket mode: pose data only (no video)
-    console.log('📡 Starting in WebSocket mode');
+    console.log('Starting in WebSocket mode');
     initPoseWebSocket();
 
     // Ensure overlay background matches bg visibility

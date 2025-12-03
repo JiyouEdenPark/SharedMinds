@@ -212,7 +212,7 @@ class TrainingSystem {
             this.trainingStartTime = Date.now();
             this.processedLogs.clear(); // Initialize Set to prevent duplicate logs
             this.updateUI();
-            this.log('🚀 Starting training...', 'info');
+            this.log('Starting training...', 'info');
             
             const response = await fetch('/training/start', {
                 method: 'POST',
@@ -225,15 +225,15 @@ class TrainingSystem {
             const result = await response.json();
             
             if (result.status === 'ok') {
-                this.log('✅ Training started successfully.', 'success');
+                this.log('Training started successfully.', 'success');
                 this.startProgressMonitoring();
             } else {
-                this.log(`❌ Failed to start training: ${result.error}`, 'error');
+                this.log(`Failed to start training: ${result.error}`, 'error');
                 this.isTraining = false;
                 this.updateUI();
             }
         } catch (error) {
-            this.log(`❌ Error while starting training: ${error.message}`, 'error');
+            this.log(`Error while starting training: ${error.message}`, 'error');
             this.isTraining = false;
             this.updateUI();
         }
@@ -243,7 +243,7 @@ class TrainingSystem {
         if (!this.isTraining) return;
         
         try {
-            this.log('⏹️ Stopping training...', 'warning');
+            this.log('Stopping training...', 'warning');
             
             const response = await fetch('/training/stop', {
                 method: 'POST'
@@ -252,12 +252,12 @@ class TrainingSystem {
             const result = await response.json();
             
             if (result.status === 'ok') {
-                this.log('✅ Training stopped.', 'success');
+                this.log('Training stopped.', 'success');
             } else {
-                this.log(`❌ Failed to stop training: ${result.error}`, 'error');
+                this.log(`Failed to stop training: ${result.error}`, 'error');
             }
         } catch (error) {
-            this.log(`❌ Error while stopping training: ${error.message}`, 'error');
+            this.log(`Error while stopping training: ${error.message}`, 'error');
         }
         
         this.isTraining = false;
@@ -266,7 +266,7 @@ class TrainingSystem {
     
     validateConfig(config) {
         if (!config.data_glob || config.data_glob.trim() === '') {
-            this.log('❌ Please enter data path.', 'error');
+            this.log('Please enter data path.', 'error');
             return false;
         }
         
@@ -274,23 +274,23 @@ class TrainingSystem {
         if (config.training_mode === 'full') {
             // Full pipeline: validate training parameters
             if (config.epochs < 1 || config.epochs > 1000) {
-                this.log('❌ Number of epochs must be between 1-1000.', 'error');
+                this.log('Number of epochs must be between 1-1000.', 'error');
                 return false;
             }
             
             if (config.batch_size < 1 || config.batch_size > 512) {
-                this.log('❌ Batch size must be between 1-512.', 'error');
+                this.log('Batch size must be between 1-512.', 'error');
                 return false;
             }
             
             if (config.lr <= 0 || config.lr > 0.1) {
-                this.log('❌ Learning rate must be greater than 0 and less than or equal to 0.1.', 'error');
+                this.log('Learning rate must be greater than 0 and less than or equal to 0.1.', 'error');
                 return false;
             }
         } else if (config.training_mode === 'clustering') {
             // Clustering only: validate embedding file path
             if (!config.embeddings_path || config.embeddings_path.trim() === '') {
-                this.log('❌ Please enter embedding file path.', 'error');
+                this.log('Please enter embedding file path.', 'error');
                 return false;
             }
         }
@@ -364,9 +364,9 @@ class TrainingSystem {
         const state = data.state || (data.is_complete ? 'completed' : (data.is_running ? 'running' : 'idle'));
         if (state === 'completed' || state === 'failed' || state === 'stopped') {
             if (this.isTraining) {
-                if (state === 'completed') this.log('🎉 Training completed!', 'success');
-                if (state === 'failed') this.log('❌ Training failed.', 'error');
-                if (state === 'stopped') this.log('⏹️ Training stopped.', 'warning');
+                if (state === 'completed') this.log('Training completed!', 'success');
+                if (state === 'failed') this.log('Training failed.', 'error');
+                if (state === 'stopped') this.log('Training stopped.', 'warning');
             }
             this.isTraining = false;
             this.updateUI();

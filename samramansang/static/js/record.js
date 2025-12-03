@@ -38,7 +38,7 @@ function updateRecordInfo() {
             : 0;
         const minutes = Math.floor(elapsed / 60);
         const seconds = elapsed % 60;
-        recordInfoEl.textContent = `🔴 Recording (${minutes}:${seconds.toString().padStart(2, '0')})`;
+        recordInfoEl.textContent = `Recording (${minutes}:${seconds.toString().padStart(2, '0')})`;
         recordInfoEl.classList.add('recording');
     } else {
         if (recordingState.seqId) {
@@ -160,18 +160,18 @@ async function toggleRecording() {
 
             if (recordingState.isRecording) {
                 recordingState.startTime = Date.now();
-                recordBtn.textContent = '⏹️ Stop Recording';
+                recordBtn.textContent = 'Stop Recording';
                 recordBtn.classList.add('recording');
                 setStatus('Recording started');
             } else {
                 recordingState.startTime = null;
-                recordBtn.textContent = '📹 Start Recording';
+                recordBtn.textContent = 'Start Recording';
                 recordBtn.classList.remove('recording');
                 setStatus('Recording stopped');
             }
 
             updateRecordInfo();
-            console.log(`📹 Recording ${recordingState.isRecording ? 'started' : 'stopped'}: ${result.message}`);
+            console.log(`Recording ${recordingState.isRecording ? 'started' : 'stopped'}: ${result.message}`);
         } else {
             setStatus(`Recording control failed: ${result.error}`);
         }
@@ -192,11 +192,11 @@ async function checkRecordingStatus() {
             recordingState.path = result.path || null;
 
             if (recordingState.isRecording) {
-                recordBtn.textContent = '⏹️ Stop Recording';
+                recordBtn.textContent = 'Stop Recording';
                 recordBtn.classList.add('recording');
                 setStatus('Recording...');
             } else {
-                recordBtn.textContent = '📹 Start Recording';
+                recordBtn.textContent = 'Start Recording';
                 recordBtn.classList.remove('recording');
             }
 
