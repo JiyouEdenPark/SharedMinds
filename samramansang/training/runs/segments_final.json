@@ -1,92 +1,2676 @@
 {
   "source": "training/runs/segments_representative.json",
-  "created_at": "2025-10-06T02:53:01Z",
+  "created_at": "2025-12-09T23:22:01Z",
   "selected_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
     6,
+    7,
+    8,
     9,
+    10,
+    11,
     12,
-    16
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91
   ],
   "distance_metric": "cosine-transition",
-  "top_k": 3,
+  "top_k": 5,
   "segments": [
     {
-      "start": 118,
-      "end": 126,
-      "label": 11,
+      "start": 0,
+      "end": 7,
+      "label": 7,
+      "base_index": 0,
+      "next_candidates": [
+        {
+          "segment_index": 59,
+          "distance": 0.0102158784866333
+        },
+        {
+          "segment_index": 44,
+          "distance": 0.04947882890701294
+        },
+        {
+          "segment_index": 48,
+          "distance": 0.06198793649673462
+        },
+        {
+          "segment_index": 18,
+          "distance": 0.09591609239578247
+        },
+        {
+          "segment_index": 40,
+          "distance": 0.11788928508758545
+        }
+      ]
+    },
+    {
+      "start": 22,
+      "end": 28,
+      "label": 6,
+      "base_index": 1,
+      "next_candidates": [
+        {
+          "segment_index": 38,
+          "distance": 0.025875449180603027
+        },
+        {
+          "segment_index": 4,
+          "distance": 0.030695676803588867
+        },
+        {
+          "segment_index": 2,
+          "distance": 0.06167006492614746
+        },
+        {
+          "segment_index": 11,
+          "distance": 0.1269431710243225
+        },
+        {
+          "segment_index": 12,
+          "distance": 0.13109469413757324
+        }
+      ]
+    },
+    {
+      "start": 30,
+      "end": 38,
+      "label": 5,
+      "base_index": 2,
+      "next_candidates": [
+        {
+          "segment_index": 40,
+          "distance": 0.15807008743286133
+        },
+        {
+          "segment_index": 44,
+          "distance": 0.17171549797058105
+        },
+        {
+          "segment_index": 59,
+          "distance": 0.20045852661132812
+        },
+        {
+          "segment_index": 58,
+          "distance": 0.23371046781539917
+        },
+        {
+          "segment_index": 15,
+          "distance": 0.26621776819229126
+        }
+      ]
+    },
+    {
+      "start": 59,
+      "end": 66,
+      "label": 21,
+      "base_index": 3,
+      "next_candidates": [
+        {
+          "segment_index": 2,
+          "distance": 0.010687291622161865
+        },
+        {
+          "segment_index": 4,
+          "distance": 0.015265107154846191
+        },
+        {
+          "segment_index": 38,
+          "distance": 0.022200465202331543
+        },
+        {
+          "segment_index": 16,
+          "distance": 0.09927999973297119
+        },
+        {
+          "segment_index": 10,
+          "distance": 0.11065471172332764
+        }
+      ]
+    },
+    {
+      "start": 67,
+      "end": 71,
+      "label": 25,
+      "base_index": 4,
+      "next_candidates": [
+        {
+          "segment_index": 38,
+          "distance": 0.09230124950408936
+        },
+        {
+          "segment_index": 2,
+          "distance": 0.17361468076705933
+        },
+        {
+          "segment_index": 14,
+          "distance": 0.17369520664215088
+        },
+        {
+          "segment_index": 3,
+          "distance": 0.1909695863723755
+        },
+        {
+          "segment_index": 13,
+          "distance": 0.2465382218360901
+        }
+      ]
+    },
+    {
+      "start": 82,
+      "end": 86,
+      "label": 27,
+      "base_index": 5,
+      "next_candidates": [
+        {
+          "segment_index": 6,
+          "distance": 0.05143469572067261
+        },
+        {
+          "segment_index": 10,
+          "distance": 0.2883894443511963
+        },
+        {
+          "segment_index": 12,
+          "distance": 0.33285921812057495
+        },
+        {
+          "segment_index": 11,
+          "distance": 0.35953986644744873
+        },
+        {
+          "segment_index": 72,
+          "distance": 0.3715764880180359
+        }
+      ]
+    },
+    {
+      "start": 87,
+      "end": 91,
+      "label": 2,
       "base_index": 6,
       "next_candidates": [
         {
-          "segment_index": 2,
-          "distance": 1.1493899822235107
+          "segment_index": 5,
+          "distance": 0.2033442258834839
         },
         {
-          "segment_index": 1,
-          "distance": 1.3244578838348389
+          "segment_index": 70,
+          "distance": 0.3727302551269531
         },
         {
-          "segment_index": 3,
-          "distance": 1.566500186920166
+          "segment_index": 8,
+          "distance": 0.4100731611251831
+        },
+        {
+          "segment_index": 13,
+          "distance": 0.41719722747802734
+        },
+        {
+          "segment_index": 71,
+          "distance": 0.42677783966064453
         }
       ]
     },
     {
-      "start": 145,
-      "end": 149,
-      "label": 0,
+      "start": 95,
+      "end": 101,
+      "label": 20,
+      "base_index": 7,
+      "next_candidates": [
+        {
+          "segment_index": 8,
+          "distance": 0.05169922113418579
+        },
+        {
+          "segment_index": 56,
+          "distance": 0.23851919174194336
+        },
+        {
+          "segment_index": 54,
+          "distance": 0.2623627185821533
+        },
+        {
+          "segment_index": 9,
+          "distance": 0.31062179803848267
+        },
+        {
+          "segment_index": 5,
+          "distance": 0.34875357151031494
+        }
+      ]
+    },
+    {
+      "start": 102,
+      "end": 103,
+      "label": 20,
+      "base_index": 8,
+      "next_candidates": [
+        {
+          "segment_index": 9,
+          "distance": 0.042408108711242676
+        },
+        {
+          "segment_index": 7,
+          "distance": 0.06767743825912476
+        },
+        {
+          "segment_index": 57,
+          "distance": 0.1408001184463501
+        },
+        {
+          "segment_index": 50,
+          "distance": 0.17425614595413208
+        },
+        {
+          "segment_index": 55,
+          "distance": 0.18645411729812622
+        }
+      ]
+    },
+    {
+      "start": 104,
+      "end": 111,
+      "label": 23,
       "base_index": 9,
       "next_candidates": [
         {
+          "segment_index": 6,
+          "distance": 0.08865052461624146
+        },
+        {
           "segment_index": 2,
-          "distance": 0.402981698513031
+          "distance": 0.136877179145813
         },
         {
-          "segment_index": 0,
-          "distance": 0.47756320238113403
+          "segment_index": 5,
+          "distance": 0.18348807096481323
         },
         {
-          "segment_index": 3,
-          "distance": 0.5931206941604614
+          "segment_index": 16,
+          "distance": 0.1876695156097412
+        },
+        {
+          "segment_index": 10,
+          "distance": 0.20651477575302124
         }
       ]
     },
     {
-      "start": 217,
-      "end": 223,
-      "label": 3,
+      "start": 117,
+      "end": 129,
+      "label": 25,
+      "base_index": 10,
+      "next_candidates": [
+        {
+          "segment_index": 11,
+          "distance": 2.765655517578125e-05
+        },
+        {
+          "segment_index": 12,
+          "distance": 0.0006744861602783203
+        },
+        {
+          "segment_index": 4,
+          "distance": 0.09510749578475952
+        },
+        {
+          "segment_index": 13,
+          "distance": 0.09846925735473633
+        },
+        {
+          "segment_index": 38,
+          "distance": 0.14089012145996094
+        }
+      ]
+    },
+    {
+      "start": 130,
+      "end": 133,
+      "label": 25,
+      "base_index": 11,
+      "next_candidates": [
+        {
+          "segment_index": 12,
+          "distance": 0.0002465248107910156
+        },
+        {
+          "segment_index": 10,
+          "distance": 0.040824294090270996
+        },
+        {
+          "segment_index": 13,
+          "distance": 0.10324519872665405
+        },
+        {
+          "segment_index": 4,
+          "distance": 0.10337001085281372
+        },
+        {
+          "segment_index": 38,
+          "distance": 0.15194809436798096
+        }
+      ]
+    },
+    {
+      "start": 134,
+      "end": 137,
+      "label": 25,
       "base_index": 12,
       "next_candidates": [
         {
-          "segment_index": 1,
-          "distance": 0.34120047092437744
+          "segment_index": 10,
+          "distance": 0.012940704822540283
         },
         {
-          "segment_index": 3,
-          "distance": 0.9910693764686584
+          "segment_index": 11,
+          "distance": 0.026808619499206543
         },
         {
-          "segment_index": 0,
-          "distance": 1.1450024843215942
+          "segment_index": 13,
+          "distance": 0.05675828456878662
+        },
+        {
+          "segment_index": 4,
+          "distance": 0.08225977420806885
+        },
+        {
+          "segment_index": 2,
+          "distance": 0.12023556232452393
         }
       ]
     },
     {
-      "start": 309,
-      "end": 315,
-      "label": 9,
-      "base_index": 16,
+      "start": 141,
+      "end": 147,
+      "label": 2,
+      "base_index": 13,
       "next_candidates": [
         {
-          "segment_index": 1,
-          "distance": 0.45745551586151123
+          "segment_index": 14,
+          "distance": 0.007012069225311279
+        },
+        {
+          "segment_index": 3,
+          "distance": 0.05830061435699463
+        },
+        {
+          "segment_index": 17,
+          "distance": 0.08135414123535156
+        },
+        {
+          "segment_index": 18,
+          "distance": 0.113375723361969
+        },
+        {
+          "segment_index": 48,
+          "distance": 0.16634750366210938
+        }
+      ]
+    },
+    {
+      "start": 148,
+      "end": 157,
+      "label": 2,
+      "base_index": 14,
+      "next_candidates": [
+        {
+          "segment_index": 15,
+          "distance": 0.08916854858398438
+        },
+        {
+          "segment_index": 45,
+          "distance": 0.20377272367477417
+        },
+        {
+          "segment_index": 35,
+          "distance": 0.20966678857803345
+        },
+        {
+          "segment_index": 49,
+          "distance": 0.24088871479034424
         },
         {
           "segment_index": 0,
-          "distance": 0.6369196176528931
+          "distance": 0.25396817922592163
+        }
+      ]
+    },
+    {
+      "start": 158,
+      "end": 159,
+      "label": 2,
+      "base_index": 15,
+      "next_candidates": [
+        {
+          "segment_index": 14,
+          "distance": 0.03826451301574707
+        },
+        {
+          "segment_index": 3,
+          "distance": 0.07064849138259888
+        },
+        {
+          "segment_index": 18,
+          "distance": 0.08969861268997192
+        },
+        {
+          "segment_index": 17,
+          "distance": 0.0961986780166626
+        },
+        {
+          "segment_index": 0,
+          "distance": 0.10673725605010986
+        }
+      ]
+    },
+    {
+      "start": 163,
+      "end": 172,
+      "label": 21,
+      "base_index": 16,
+      "next_candidates": [
+        {
+          "segment_index": 17,
+          "distance": 0.0038307905197143555
+        },
+        {
+          "segment_index": 3,
+          "distance": 0.02871936559677124
+        },
+        {
+          "segment_index": 18,
+          "distance": 0.031075000762939453
+        },
+        {
+          "segment_index": 48,
+          "distance": 0.04411500692367554
+        },
+        {
+          "segment_index": 14,
+          "distance": 0.07864028215408325
+        }
+      ]
+    },
+    {
+      "start": 173,
+      "end": 177,
+      "label": 21,
+      "base_index": 17,
+      "next_candidates": [
+        {
+          "segment_index": 18,
+          "distance": 0.005475103855133057
+        },
+        {
+          "segment_index": 3,
+          "distance": 0.03231072425842285
+        },
+        {
+          "segment_index": 48,
+          "distance": 0.04842716455459595
+        },
+        {
+          "segment_index": 14,
+          "distance": 0.0589563250541687
+        },
+        {
+          "segment_index": 16,
+          "distance": 0.09836232662200928
+        }
+      ]
+    },
+    {
+      "start": 178,
+      "end": 184,
+      "label": 21,
+      "base_index": 18,
+      "next_candidates": [
+        {
+          "segment_index": 76,
+          "distance": 0.05102896690368652
+        },
+        {
+          "segment_index": 77,
+          "distance": 0.059186458587646484
+        },
+        {
+          "segment_index": 19,
+          "distance": 0.07542401552200317
+        },
+        {
+          "segment_index": 79,
+          "distance": 0.07669258117675781
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.08533811569213867
+        }
+      ]
+    },
+    {
+      "start": 185,
+      "end": 192,
+      "label": 22,
+      "base_index": 19,
+      "next_candidates": [
+        {
+          "segment_index": 88,
+          "distance": 0.07435369491577148
+        },
+        {
+          "segment_index": 79,
+          "distance": 0.1404552459716797
+        },
+        {
+          "segment_index": 83,
+          "distance": 0.1532071828842163
+        },
+        {
+          "segment_index": 76,
+          "distance": 0.15471047163009644
+        },
+        {
+          "segment_index": 77,
+          "distance": 0.15575963258743286
+        }
+      ]
+    },
+    {
+      "start": 204,
+      "end": 211,
+      "label": 1,
+      "base_index": 20,
+      "next_candidates": [
+        {
+          "segment_index": 21,
+          "distance": 0.08797532320022583
+        },
+        {
+          "segment_index": 80,
+          "distance": 0.09882092475891113
+        },
+        {
+          "segment_index": 23,
+          "distance": 0.152235209941864
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.1593838930130005
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.22401851415634155
+        }
+      ]
+    },
+    {
+      "start": 220,
+      "end": 228,
+      "label": 26,
+      "base_index": 21,
+      "next_candidates": [
+        {
+          "segment_index": 22,
+          "distance": 0.017995178699493408
+        },
+        {
+          "segment_index": 32,
+          "distance": 0.054890573024749756
+        },
+        {
+          "segment_index": 20,
+          "distance": 0.05641913414001465
+        },
+        {
+          "segment_index": 82,
+          "distance": 0.06233030557632446
+        },
+        {
+          "segment_index": 33,
+          "distance": 0.08575171232223511
+        }
+      ]
+    },
+    {
+      "start": 229,
+      "end": 235,
+      "label": 26,
+      "base_index": 22,
+      "next_candidates": [
+        {
+          "segment_index": 23,
+          "distance": 0.004368960857391357
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.04696303606033325
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.0758160948753357
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.09413754940032959
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.09799420833587646
+        }
+      ]
+    },
+    {
+      "start": 236,
+      "end": 245,
+      "label": 26,
+      "base_index": 23,
+      "next_candidates": [
+        {
+          "segment_index": 24,
+          "distance": 0.00854116678237915
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.012552618980407715
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.014763295650482178
+        },
+        {
+          "segment_index": 73,
+          "distance": 0.066159188747406
+        },
+        {
+          "segment_index": 87,
+          "distance": 0.10289555788040161
+        }
+      ]
+    },
+    {
+      "start": 246,
+      "end": 249,
+      "label": 26,
+      "base_index": 24,
+      "next_candidates": [
+        {
+          "segment_index": 25,
+          "distance": 0.03527796268463135
+        },
+        {
+          "segment_index": 78,
+          "distance": 0.3528415560722351
+        },
+        {
+          "segment_index": 91,
+          "distance": 0.35459959506988525
+        },
+        {
+          "segment_index": 22,
+          "distance": 0.4193025827407837
+        },
+        {
+          "segment_index": 21,
+          "distance": 0.426913857460022
+        }
+      ]
+    },
+    {
+      "start": 250,
+      "end": 259,
+      "label": 19,
+      "base_index": 25,
+      "next_candidates": [
+        {
+          "segment_index": 26,
+          "distance": 0.052571654319763184
+        },
+        {
+          "segment_index": 43,
+          "distance": 0.15281784534454346
+        },
+        {
+          "segment_index": 37,
+          "distance": 0.2532910704612732
+        },
+        {
+          "segment_index": 42,
+          "distance": 0.25335997343063354
+        },
+        {
+          "segment_index": 54,
+          "distance": 0.34339427947998047
+        }
+      ]
+    },
+    {
+      "start": 260,
+      "end": 272,
+      "label": 19,
+      "base_index": 26,
+      "next_candidates": [
+        {
+          "segment_index": 27,
+          "distance": 0.010123372077941895
+        },
+        {
+          "segment_index": 31,
+          "distance": 0.11690199375152588
+        },
+        {
+          "segment_index": 42,
+          "distance": 0.12200039625167847
+        },
+        {
+          "segment_index": 30,
+          "distance": 0.1285451054573059
+        },
+        {
+          "segment_index": 41,
+          "distance": 0.15971195697784424
+        }
+      ]
+    },
+    {
+      "start": 273,
+      "end": 275,
+      "label": 19,
+      "base_index": 27,
+      "next_candidates": [
+        {
+          "segment_index": 90,
+          "distance": 0.11655336618423462
+        },
+        {
+          "segment_index": 89,
+          "distance": 0.1641520857810974
+        },
+        {
+          "segment_index": 54,
+          "distance": 0.24594199657440186
+        },
+        {
+          "segment_index": 56,
+          "distance": 0.2887422442436218
+        },
+        {
+          "segment_index": 26,
+          "distance": 0.30198073387145996
+        }
+      ]
+    },
+    {
+      "start": 277,
+      "end": 285,
+      "label": 27,
+      "base_index": 28,
+      "next_candidates": [
+        {
+          "segment_index": 29,
+          "distance": 0.07175898551940918
+        },
+        {
+          "segment_index": 39,
+          "distance": 0.34996432065963745
+        },
+        {
+          "segment_index": 66,
+          "distance": 0.3661949038505554
+        },
+        {
+          "segment_index": 67,
+          "distance": 0.3675643801689148
+        },
+        {
+          "segment_index": 69,
+          "distance": 0.37130314111709595
+        }
+      ]
+    },
+    {
+      "start": 286,
+      "end": 292,
+      "label": 27,
+      "base_index": 29,
+      "next_candidates": [
+        {
+          "segment_index": 30,
+          "distance": 0.003998994827270508
+        },
+        {
+          "segment_index": 27,
+          "distance": 0.15822958946228027
+        },
+        {
+          "segment_index": 41,
+          "distance": 0.17523103952407837
+        },
+        {
+          "segment_index": 31,
+          "distance": 0.18251991271972656
+        },
+        {
+          "segment_index": 87,
+          "distance": 0.20207852125167847
+        }
+      ]
+    },
+    {
+      "start": 293,
+      "end": 302,
+      "label": 27,
+      "base_index": 30,
+      "next_candidates": [
+        {
+          "segment_index": 31,
+          "distance": 0.015853583812713623
+        },
+        {
+          "segment_index": 87,
+          "distance": 0.09582364559173584
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.1028701663017273
+        },
+        {
+          "segment_index": 23,
+          "distance": 0.10871952772140503
+        },
+        {
+          "segment_index": 27,
+          "distance": 0.11668699979782104
+        }
+      ]
+    },
+    {
+      "start": 303,
+      "end": 308,
+      "label": 27,
+      "base_index": 31,
+      "next_candidates": [
+        {
+          "segment_index": 91,
+          "distance": 0.1691921353340149
+        },
+        {
+          "segment_index": 1,
+          "distance": 0.26147937774658203
+        },
+        {
+          "segment_index": 25,
+          "distance": 0.27497726678848267
+        },
+        {
+          "segment_index": 11,
+          "distance": 0.3285965323448181
+        },
+        {
+          "segment_index": 12,
+          "distance": 0.33009105920791626
+        }
+      ]
+    },
+    {
+      "start": 327,
+      "end": 331,
+      "label": 22,
+      "base_index": 32,
+      "next_candidates": [
+        {
+          "segment_index": 81,
+          "distance": 0.030367016792297363
+        },
+        {
+          "segment_index": 33,
+          "distance": 0.04799449443817139
+        },
+        {
+          "segment_index": 80,
+          "distance": 0.06685930490493774
+        },
+        {
+          "segment_index": 20,
+          "distance": 0.07774567604064941
+        },
+        {
+          "segment_index": 22,
+          "distance": 0.107646644115448
+        }
+      ]
+    },
+    {
+      "start": 333,
+      "end": 340,
+      "label": 12,
+      "base_index": 33,
+      "next_candidates": [
+        {
+          "segment_index": 34,
+          "distance": 0.013256311416625977
+        },
+        {
+          "segment_index": 82,
+          "distance": 0.06274574995040894
+        },
+        {
+          "segment_index": 32,
+          "distance": 0.09447181224822998
+        },
+        {
+          "segment_index": 83,
+          "distance": 0.13087958097457886
+        },
+        {
+          "segment_index": 52,
+          "distance": 0.15462946891784668
+        }
+      ]
+    },
+    {
+      "start": 341,
+      "end": 350,
+      "label": 12,
+      "base_index": 34,
+      "next_candidates": [
+        {
+          "segment_index": 16,
+          "distance": 0.048526763916015625
+        },
+        {
+          "segment_index": 17,
+          "distance": 0.06314033269882202
+        },
+        {
+          "segment_index": 3,
+          "distance": 0.06403452157974243
+        },
+        {
+          "segment_index": 14,
+          "distance": 0.07765424251556396
+        },
+        {
+          "segment_index": 18,
+          "distance": 0.10513091087341309
+        }
+      ]
+    },
+    {
+      "start": 353,
+      "end": 357,
+      "label": 4,
+      "base_index": 35,
+      "next_candidates": [
+        {
+          "segment_index": 36,
+          "distance": 0.06625223159790039
+        },
+        {
+          "segment_index": 41,
+          "distance": 0.26497334241867065
+        },
+        {
+          "segment_index": 0,
+          "distance": 0.2670721411705017
+        },
+        {
+          "segment_index": 84,
+          "distance": 0.30668413639068604
+        },
+        {
+          "segment_index": 30,
+          "distance": 0.3383960723876953
+        }
+      ]
+    },
+    {
+      "start": 358,
+      "end": 362,
+      "label": 24,
+      "base_index": 36,
+      "next_candidates": [
+        {
+          "segment_index": 0,
+          "distance": 0.098338782787323
+        },
+        {
+          "segment_index": 18,
+          "distance": 0.16448622941970825
+        },
+        {
+          "segment_index": 15,
+          "distance": 0.1857324242591858
+        },
+        {
+          "segment_index": 14,
+          "distance": 0.19450682401657104
+        },
+        {
+          "segment_index": 35,
+          "distance": 0.20579344034194946
+        }
+      ]
+    },
+    {
+      "start": 370,
+      "end": 374,
+      "label": 10,
+      "base_index": 37,
+      "next_candidates": [
+        {
+          "segment_index": 15,
+          "distance": 0.15323889255523682
+        },
+        {
+          "segment_index": 49,
+          "distance": 0.18303793668746948
+        },
+        {
+          "segment_index": 58,
+          "distance": 0.3348007798194885
+        },
+        {
+          "segment_index": 73,
+          "distance": 0.3356096148490906
+        },
+        {
+          "segment_index": 35,
+          "distance": 0.3412199020385742
+        }
+      ]
+    },
+    {
+      "start": 387,
+      "end": 394,
+      "label": 25,
+      "base_index": 38,
+      "next_candidates": [
+        {
+          "segment_index": 49,
+          "distance": 0.12968361377716064
+        },
+        {
+          "segment_index": 84,
+          "distance": 0.15113747119903564
+        },
+        {
+          "segment_index": 30,
+          "distance": 0.1571270227432251
+        },
+        {
+          "segment_index": 35,
+          "distance": 0.16320586204528809
+        },
+        {
+          "segment_index": 27,
+          "distance": 0.17496222257614136
+        }
+      ]
+    },
+    {
+      "start": 398,
+      "end": 406,
+      "label": 13,
+      "base_index": 39,
+      "next_candidates": [
+        {
+          "segment_index": 41,
+          "distance": 0.12047791481018066
+        },
+        {
+          "segment_index": 42,
+          "distance": 0.18483150005340576
+        },
+        {
+          "segment_index": 58,
+          "distance": 0.18988031148910522
+        },
+        {
+          "segment_index": 27,
+          "distance": 0.22182458639144897
+        },
+        {
+          "segment_index": 43,
+          "distance": 0.23327678442001343
+        }
+      ]
+    },
+    {
+      "start": 407,
+      "end": 416,
+      "label": 7,
+      "base_index": 40,
+      "next_candidates": [
+        {
+          "segment_index": 43,
+          "distance": 0.06312721967697144
+        },
+        {
+          "segment_index": 50,
+          "distance": 0.13996988534927368
+        },
+        {
+          "segment_index": 55,
+          "distance": 0.16520708799362183
+        },
+        {
+          "segment_index": 53,
+          "distance": 0.18075984716415405
+        },
+        {
+          "segment_index": 54,
+          "distance": 0.19040435552597046
+        }
+      ]
+    },
+    {
+      "start": 428,
+      "end": 435,
+      "label": 1,
+      "base_index": 41,
+      "next_candidates": [
+        {
+          "segment_index": 42,
+          "distance": 0.04020029306411743
+        },
+        {
+          "segment_index": 43,
+          "distance": 0.12419313192367554
+        },
+        {
+          "segment_index": 55,
+          "distance": 0.20556914806365967
+        },
+        {
+          "segment_index": 27,
+          "distance": 0.24766790866851807
+        },
+        {
+          "segment_index": 58,
+          "distance": 0.25020283460617065
+        }
+      ]
+    },
+    {
+      "start": 436,
+      "end": 442,
+      "label": 1,
+      "base_index": 42,
+      "next_candidates": [
+        {
+          "segment_index": 37,
+          "distance": 0.22893691062927246
+        },
+        {
+          "segment_index": 43,
+          "distance": 0.23647719621658325
+        },
+        {
+          "segment_index": 45,
+          "distance": 0.24960190057754517
+        },
+        {
+          "segment_index": 56,
+          "distance": 0.2548264265060425
+        },
+        {
+          "segment_index": 26,
+          "distance": 0.2919817566871643
+        }
+      ]
+    },
+    {
+      "start": 445,
+      "end": 454,
+      "label": 1,
+      "base_index": 43,
+      "next_candidates": [
+        {
+          "segment_index": 40,
+          "distance": 0.07461893558502197
+        },
+        {
+          "segment_index": 59,
+          "distance": 0.11076253652572632
+        },
+        {
+          "segment_index": 44,
+          "distance": 0.11941677331924438
+        },
+        {
+          "segment_index": 58,
+          "distance": 0.12822413444519043
+        },
+        {
+          "segment_index": 35,
+          "distance": 0.1589200496673584
+        }
+      ]
+    },
+    {
+      "start": 466,
+      "end": 469,
+      "label": 7,
+      "base_index": 44,
+      "next_candidates": [
+        {
+          "segment_index": 35,
+          "distance": 0.14365625381469727
+        },
+        {
+          "segment_index": 59,
+          "distance": 0.1901179552078247
+        },
+        {
+          "segment_index": 15,
+          "distance": 0.19298046827316284
+        },
+        {
+          "segment_index": 0,
+          "distance": 0.19686853885650635
+        },
+        {
+          "segment_index": 45,
+          "distance": 0.2252897024154663
+        }
+      ]
+    },
+    {
+      "start": 470,
+      "end": 476,
+      "label": 10,
+      "base_index": 45,
+      "next_candidates": [
+        {
+          "segment_index": 46,
+          "distance": 0.012041032314300537
+        },
+        {
+          "segment_index": 47,
+          "distance": 0.021339774131774902
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.3089461326599121
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.3275337219238281
+        },
+        {
+          "segment_index": 73,
+          "distance": 0.3594491481781006
+        }
+      ]
+    },
+    {
+      "start": 477,
+      "end": 485,
+      "label": 10,
+      "base_index": 46,
+      "next_candidates": [
+        {
+          "segment_index": 47,
+          "distance": 0.033238887786865234
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.40602296590805054
+        },
+        {
+          "segment_index": 73,
+          "distance": 0.4282214641571045
+        },
+        {
+          "segment_index": 22,
+          "distance": 0.43216007947921753
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.43360382318496704
+        }
+      ]
+    },
+    {
+      "start": 489,
+      "end": 493,
+      "label": 10,
+      "base_index": 47,
+      "next_candidates": [
+        {
+          "segment_index": 15,
+          "distance": 0.05442541837692261
+        },
+        {
+          "segment_index": 59,
+          "distance": 0.0881953239440918
+        },
+        {
+          "segment_index": 40,
+          "distance": 0.11920952796936035
+        },
+        {
+          "segment_index": 44,
+          "distance": 0.14671701192855835
+        },
+        {
+          "segment_index": 0,
+          "distance": 0.19204425811767578
+        }
+      ]
+    },
+    {
+      "start": 502,
+      "end": 505,
+      "label": 7,
+      "base_index": 48,
+      "next_candidates": [
+        {
+          "segment_index": 49,
+          "distance": 0.042339861392974854
+        },
+        {
+          "segment_index": 35,
+          "distance": 0.06056320667266846
+        },
+        {
+          "segment_index": 15,
+          "distance": 0.19769299030303955
+        },
+        {
+          "segment_index": 59,
+          "distance": 0.1989731788635254
+        },
+        {
+          "segment_index": 0,
+          "distance": 0.21837341785430908
+        }
+      ]
+    },
+    {
+      "start": 506,
+      "end": 513,
+      "label": 1,
+      "base_index": 49,
+      "next_candidates": [
+        {
+          "segment_index": 27,
+          "distance": 0.09894925355911255
+        },
+        {
+          "segment_index": 43,
+          "distance": 0.10836762189865112
+        },
+        {
+          "segment_index": 51,
+          "distance": 0.13018882274627686
+        },
+        {
+          "segment_index": 53,
+          "distance": 0.13582825660705566
+        },
+        {
+          "segment_index": 31,
+          "distance": 0.14705932140350342
+        }
+      ]
+    },
+    {
+      "start": 517,
+      "end": 521,
+      "label": 23,
+      "base_index": 50,
+      "next_candidates": [
+        {
+          "segment_index": 9,
+          "distance": 0.0728796124458313
+        },
+        {
+          "segment_index": 57,
+          "distance": 0.13488036394119263
+        },
+        {
+          "segment_index": 55,
+          "distance": 0.14160460233688354
+        },
+        {
+          "segment_index": 77,
+          "distance": 0.170141339302063
+        },
+        {
+          "segment_index": 53,
+          "distance": 0.17158764600753784
+        }
+      ]
+    },
+    {
+      "start": 525,
+      "end": 530,
+      "label": 18,
+      "base_index": 51,
+      "next_candidates": [
+        {
+          "segment_index": 52,
+          "distance": 0.007532477378845215
+        },
+        {
+          "segment_index": 20,
+          "distance": 0.014148235321044922
+        },
+        {
+          "segment_index": 19,
+          "distance": 0.028291404247283936
+        },
+        {
+          "segment_index": 32,
+          "distance": 0.036575913429260254
+        },
+        {
+          "segment_index": 79,
+          "distance": 0.05018436908721924
+        }
+      ]
+    },
+    {
+      "start": 531,
+      "end": 543,
+      "label": 18,
+      "base_index": 52,
+      "next_candidates": [
+        {
+          "segment_index": 50,
+          "distance": 0.06514990329742432
+        },
+        {
+          "segment_index": 53,
+          "distance": 0.07084548473358154
+        },
+        {
+          "segment_index": 51,
+          "distance": 0.09058672189712524
+        },
+        {
+          "segment_index": 77,
+          "distance": 0.1214490532875061
+        },
+        {
+          "segment_index": 76,
+          "distance": 0.15979886054992676
+        }
+      ]
+    },
+    {
+      "start": 544,
+      "end": 547,
+      "label": 18,
+      "base_index": 53,
+      "next_candidates": [
+        {
+          "segment_index": 43,
+          "distance": 0.11869829893112183
+        },
+        {
+          "segment_index": 26,
+          "distance": 0.12840360403060913
+        },
+        {
+          "segment_index": 51,
+          "distance": 0.17322731018066406
+        },
+        {
+          "segment_index": 50,
+          "distance": 0.19562864303588867
+        },
+        {
+          "segment_index": 54,
+          "distance": 0.2042323350906372
+        }
+      ]
+    },
+    {
+      "start": 548,
+      "end": 553,
+      "label": 20,
+      "base_index": 54,
+      "next_candidates": [
+        {
+          "segment_index": 57,
+          "distance": 0.041662514209747314
+        },
+        {
+          "segment_index": 55,
+          "distance": 0.0628519058227539
+        },
+        {
+          "segment_index": 56,
+          "distance": 0.0895037055015564
+        },
+        {
+          "segment_index": 8,
+          "distance": 0.13573014736175537
+        },
+        {
+          "segment_index": 50,
+          "distance": 0.14700371026992798
+        }
+      ]
+    },
+    {
+      "start": 554,
+      "end": 561,
+      "label": 23,
+      "base_index": 55,
+      "next_candidates": [
+        {
+          "segment_index": 57,
+          "distance": 0.07401454448699951
+        },
+        {
+          "segment_index": 50,
+          "distance": 0.07998013496398926
+        },
+        {
+          "segment_index": 43,
+          "distance": 0.09610915184020996
+        },
+        {
+          "segment_index": 54,
+          "distance": 0.0988767147064209
+        },
+        {
+          "segment_index": 56,
+          "distance": 0.11911427974700928
+        }
+      ]
+    },
+    {
+      "start": 562,
+      "end": 568,
+      "label": 20,
+      "base_index": 56,
+      "next_candidates": [
+        {
+          "segment_index": 57,
+          "distance": 0.06238722801208496
+        },
+        {
+          "segment_index": 8,
+          "distance": 0.09677129983901978
+        },
+        {
+          "segment_index": 55,
+          "distance": 0.10409176349639893
+        },
+        {
+          "segment_index": 54,
+          "distance": 0.1278356909751892
+        },
+        {
+          "segment_index": 9,
+          "distance": 0.15820550918579102
+        }
+      ]
+    },
+    {
+      "start": 570,
+      "end": 576,
+      "label": 23,
+      "base_index": 57,
+      "next_candidates": [
+        {
+          "segment_index": 56,
+          "distance": 0.19856524467468262
+        },
+        {
+          "segment_index": 58,
+          "distance": 0.26166588068008423
+        },
+        {
+          "segment_index": 43,
+          "distance": 0.26188772916793823
+        },
+        {
+          "segment_index": 41,
+          "distance": 0.2696499824523926
+        },
+        {
+          "segment_index": 42,
+          "distance": 0.27341777086257935
+        }
+      ]
+    },
+    {
+      "start": 580,
+      "end": 581,
+      "label": 23,
+      "base_index": 58,
+      "next_candidates": [
+        {
+          "segment_index": 40,
+          "distance": 0.02158045768737793
+        },
+        {
+          "segment_index": 59,
+          "distance": 0.053774893283843994
+        },
+        {
+          "segment_index": 44,
+          "distance": 0.06461304426193237
+        },
+        {
+          "segment_index": 15,
+          "distance": 0.1329980492591858
+        },
+        {
+          "segment_index": 35,
+          "distance": 0.19423425197601318
+        }
+      ]
+    },
+    {
+      "start": 582,
+      "end": 587,
+      "label": 7,
+      "base_index": 59,
+      "next_candidates": [
+        {
+          "segment_index": 44,
+          "distance": 0.028951406478881836
+        },
+        {
+          "segment_index": 48,
+          "distance": 0.04563874006271362
+        },
+        {
+          "segment_index": 40,
+          "distance": 0.08978122472763062
+        },
+        {
+          "segment_index": 0,
+          "distance": 0.09005779027938843
+        },
+        {
+          "segment_index": 18,
+          "distance": 0.1033589243888855
+        }
+      ]
+    },
+    {
+      "start": 595,
+      "end": 601,
+      "label": 0,
+      "base_index": 60,
+      "next_candidates": [
+        {
+          "segment_index": 62,
+          "distance": 0.0006508827209472656
+        },
+        {
+          "segment_index": 63,
+          "distance": 0.009015023708343506
+        },
+        {
+          "segment_index": 61,
+          "distance": 0.010347187519073486
+        },
+        {
+          "segment_index": 64,
+          "distance": 0.07776963710784912
+        },
+        {
+          "segment_index": 90,
+          "distance": 0.21615171432495117
+        }
+      ]
+    },
+    {
+      "start": 605,
+      "end": 620,
+      "label": 0,
+      "base_index": 61,
+      "next_candidates": [
+        {
+          "segment_index": 62,
+          "distance": 0.0013051033020019531
+        },
+        {
+          "segment_index": 60,
+          "distance": 0.010633766651153564
+        },
+        {
+          "segment_index": 63,
+          "distance": 0.020502865314483643
+        },
+        {
+          "segment_index": 64,
+          "distance": 0.06928455829620361
+        },
+        {
+          "segment_index": 90,
+          "distance": 0.23138129711151123
+        }
+      ]
+    },
+    {
+      "start": 623,
+      "end": 629,
+      "label": 0,
+      "base_index": 62,
+      "next_candidates": [
+        {
+          "segment_index": 60,
+          "distance": 0.027655363082885742
+        },
+        {
+          "segment_index": 63,
+          "distance": 0.03487586975097656
+        },
+        {
+          "segment_index": 61,
+          "distance": 0.10202920436859131
+        },
+        {
+          "segment_index": 64,
+          "distance": 0.1988925337791443
+        },
+        {
+          "segment_index": 89,
+          "distance": 0.23010504245758057
+        }
+      ]
+    },
+    {
+      "start": 630,
+      "end": 631,
+      "label": 0,
+      "base_index": 63,
+      "next_candidates": [
+        {
+          "segment_index": 64,
+          "distance": 0.047680020332336426
+        },
+        {
+          "segment_index": 61,
+          "distance": 0.06139492988586426
+        },
+        {
+          "segment_index": 62,
+          "distance": 0.10580170154571533
+        },
+        {
+          "segment_index": 60,
+          "distance": 0.13123703002929688
+        },
+        {
+          "segment_index": 65,
+          "distance": 0.16026943922042847
+        }
+      ]
+    },
+    {
+      "start": 637,
+      "end": 643,
+      "label": 0,
+      "base_index": 64,
+      "next_candidates": [
+        {
+          "segment_index": 61,
+          "distance": 0.09154045581817627
+        },
+        {
+          "segment_index": 65,
+          "distance": 0.11899453401565552
+        },
+        {
+          "segment_index": 62,
+          "distance": 0.15102845430374146
+        },
+        {
+          "segment_index": 63,
+          "distance": 0.17454910278320312
+        },
+        {
+          "segment_index": 68,
+          "distance": 0.17773747444152832
+        }
+      ]
+    },
+    {
+      "start": 647,
+      "end": 656,
+      "label": 9,
+      "base_index": 65,
+      "next_candidates": [
+        {
+          "segment_index": 66,
+          "distance": 2.2709369659423828e-05
+        },
+        {
+          "segment_index": 69,
+          "distance": 0.0002576112747192383
+        },
+        {
+          "segment_index": 67,
+          "distance": 0.0005959272384643555
+        },
+        {
+          "segment_index": 68,
+          "distance": 0.004301846027374268
+        },
+        {
+          "segment_index": 1,
+          "distance": 0.29979997873306274
+        }
+      ]
+    },
+    {
+      "start": 657,
+      "end": 663,
+      "label": 9,
+      "base_index": 66,
+      "next_candidates": [
+        {
+          "segment_index": 67,
+          "distance": 0.00010639429092407227
+        },
+        {
+          "segment_index": 69,
+          "distance": 0.0003082156181335449
+        },
+        {
+          "segment_index": 68,
+          "distance": 0.0017898082733154297
+        },
+        {
+          "segment_index": 65,
+          "distance": 0.015137076377868652
+        },
+        {
+          "segment_index": 1,
+          "distance": 0.29698944091796875
+        }
+      ]
+    },
+    {
+      "start": 664,
+      "end": 674,
+      "label": 9,
+      "base_index": 67,
+      "next_candidates": [
+        {
+          "segment_index": 68,
+          "distance": 3.725290298461914e-05
+        },
+        {
+          "segment_index": 69,
+          "distance": 0.003382265567779541
+        },
+        {
+          "segment_index": 66,
+          "distance": 0.005569934844970703
+        },
+        {
+          "segment_index": 65,
+          "distance": 0.008604824542999268
+        },
+        {
+          "segment_index": 1,
+          "distance": 0.2983837127685547
+        }
+      ]
+    },
+    {
+      "start": 675,
+      "end": 686,
+      "label": 9,
+      "base_index": 68,
+      "next_candidates": [
+        {
+          "segment_index": 67,
+          "distance": 0.0006157755851745605
+        },
+        {
+          "segment_index": 69,
+          "distance": 0.0011919736862182617
+        },
+        {
+          "segment_index": 66,
+          "distance": 0.002653181552886963
+        },
+        {
+          "segment_index": 65,
+          "distance": 0.012125194072723389
+        },
+        {
+          "segment_index": 1,
+          "distance": 0.3023396134376526
+        }
+      ]
+    },
+    {
+      "start": 691,
+      "end": 701,
+      "label": 9,
+      "base_index": 69,
+      "next_candidates": [
+        {
+          "segment_index": 65,
+          "distance": 0.0046114325523376465
+        },
+        {
+          "segment_index": 68,
+          "distance": 0.025970816612243652
+        },
+        {
+          "segment_index": 67,
+          "distance": 0.03389984369277954
+        },
+        {
+          "segment_index": 66,
+          "distance": 0.04230552911758423
+        },
+        {
+          "segment_index": 64,
+          "distance": 0.1810550093650818
+        }
+      ]
+    },
+    {
+      "start": 709,
+      "end": 718,
+      "label": 14,
+      "base_index": 70,
+      "next_candidates": [
+        {
+          "segment_index": 71,
+          "distance": 0.0004960298538208008
+        },
+        {
+          "segment_index": 72,
+          "distance": 0.15046781301498413
+        },
+        {
+          "segment_index": 16,
+          "distance": 0.40706849098205566
+        },
+        {
+          "segment_index": 6,
+          "distance": 0.4413915276527405
+        },
+        {
+          "segment_index": 17,
+          "distance": 0.47358113527297974
+        }
+      ]
+    },
+    {
+      "start": 720,
+      "end": 724,
+      "label": 14,
+      "base_index": 71,
+      "next_candidates": [
+        {
+          "segment_index": 70,
+          "distance": 0.011927664279937744
+        },
+        {
+          "segment_index": 72,
+          "distance": 0.14093631505966187
+        },
+        {
+          "segment_index": 16,
+          "distance": 0.40637725591659546
+        },
+        {
+          "segment_index": 6,
+          "distance": 0.4351300001144409
+        },
+        {
+          "segment_index": 17,
+          "distance": 0.47882354259490967
+        }
+      ]
+    },
+    {
+      "start": 736,
+      "end": 744,
+      "label": 14,
+      "base_index": 72,
+      "next_candidates": [
+        {
+          "segment_index": 70,
+          "distance": 0.10480755567550659
+        },
+        {
+          "segment_index": 71,
+          "distance": 0.12571513652801514
         },
         {
           "segment_index": 2,
-          "distance": 0.9690039157867432
+          "distance": 0.2895427942276001
+        },
+        {
+          "segment_index": 65,
+          "distance": 0.3150652050971985
+        },
+        {
+          "segment_index": 68,
+          "distance": 0.318878710269928
+        }
+      ]
+    },
+    {
+      "start": 754,
+      "end": 755,
+      "label": 10,
+      "base_index": 73,
+      "next_candidates": [
+        {
+          "segment_index": 74,
+          "distance": 0.028631925582885742
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.03846925497055054
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.058919310569763184
+        },
+        {
+          "segment_index": 84,
+          "distance": 0.12716460227966309
+        },
+        {
+          "segment_index": 87,
+          "distance": 0.16118937730789185
+        }
+      ]
+    },
+    {
+      "start": 759,
+      "end": 764,
+      "label": 11,
+      "base_index": 74,
+      "next_candidates": [
+        {
+          "segment_index": 75,
+          "distance": 0.008932769298553467
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.023492872714996338
+        },
+        {
+          "segment_index": 73,
+          "distance": 0.0687609314918518
+        },
+        {
+          "segment_index": 87,
+          "distance": 0.07080996036529541
+        },
+        {
+          "segment_index": 23,
+          "distance": 0.0905349850654602
+        }
+      ]
+    },
+    {
+      "start": 765,
+      "end": 766,
+      "label": 11,
+      "base_index": 75,
+      "next_candidates": [
+        {
+          "segment_index": 23,
+          "distance": 0.0189208984375
+        },
+        {
+          "segment_index": 85,
+          "distance": 0.08095544576644897
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.10173040628433228
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.10302132368087769
+        },
+        {
+          "segment_index": 87,
+          "distance": 0.10480540990829468
+        }
+      ]
+    },
+    {
+      "start": 769,
+      "end": 777,
+      "label": 29,
+      "base_index": 76,
+      "next_candidates": [
+        {
+          "segment_index": 77,
+          "distance": 0.004896402359008789
+        },
+        {
+          "segment_index": 79,
+          "distance": 0.019691050052642822
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.03932446241378784
+        },
+        {
+          "segment_index": 20,
+          "distance": 0.07878506183624268
+        },
+        {
+          "segment_index": 19,
+          "distance": 0.08425736427307129
+        }
+      ]
+    },
+    {
+      "start": 778,
+      "end": 782,
+      "label": 29,
+      "base_index": 77,
+      "next_candidates": [
+        {
+          "segment_index": 76,
+          "distance": 0.030742526054382324
+        },
+        {
+          "segment_index": 79,
+          "distance": 0.06249493360519409
+        },
+        {
+          "segment_index": 53,
+          "distance": 0.08016258478164673
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.08148908615112305
+        },
+        {
+          "segment_index": 51,
+          "distance": 0.08377844095230103
+        }
+      ]
+    },
+    {
+      "start": 786,
+      "end": 796,
+      "label": 6,
+      "base_index": 78,
+      "next_candidates": [
+        {
+          "segment_index": 19,
+          "distance": 0.017151355743408203
+        },
+        {
+          "segment_index": 79,
+          "distance": 0.034112513065338135
+        },
+        {
+          "segment_index": 52,
+          "distance": 0.038542211055755615
+        },
+        {
+          "segment_index": 76,
+          "distance": 0.0392799973487854
+        },
+        {
+          "segment_index": 32,
+          "distance": 0.04020035266876221
+        }
+      ]
+    },
+    {
+      "start": 797,
+      "end": 798,
+      "label": 6,
+      "base_index": 79,
+      "next_candidates": [
+        {
+          "segment_index": 81,
+          "distance": 0.01819002628326416
+        },
+        {
+          "segment_index": 80,
+          "distance": 0.03696030378341675
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.06646859645843506
+        },
+        {
+          "segment_index": 20,
+          "distance": 0.07947826385498047
+        },
+        {
+          "segment_index": 76,
+          "distance": 0.0868908166885376
+        }
+      ]
+    },
+    {
+      "start": 799,
+      "end": 808,
+      "label": 15,
+      "base_index": 80,
+      "next_candidates": [
+        {
+          "segment_index": 81,
+          "distance": 0.0642247200012207
+        },
+        {
+          "segment_index": 23,
+          "distance": 0.0944969654083252
+        },
+        {
+          "segment_index": 21,
+          "distance": 0.15866345167160034
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.17013192176818848
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.18026024103164673
+        }
+      ]
+    },
+    {
+      "start": 809,
+      "end": 821,
+      "label": 22,
+      "base_index": 81,
+      "next_candidates": [
+        {
+          "segment_index": 82,
+          "distance": 0.0055730342864990234
+        },
+        {
+          "segment_index": 32,
+          "distance": 0.008373677730560303
+        },
+        {
+          "segment_index": 52,
+          "distance": 0.028557300567626953
+        },
+        {
+          "segment_index": 20,
+          "distance": 0.03613024950027466
+        },
+        {
+          "segment_index": 33,
+          "distance": 0.04707592725753784
+        }
+      ]
+    },
+    {
+      "start": 822,
+      "end": 825,
+      "label": 22,
+      "base_index": 82,
+      "next_candidates": [
+        {
+          "segment_index": 83,
+          "distance": 0.0008871555328369141
+        },
+        {
+          "segment_index": 79,
+          "distance": 0.051410138607025146
+        },
+        {
+          "segment_index": 20,
+          "distance": 0.055392563343048096
+        },
+        {
+          "segment_index": 32,
+          "distance": 0.05679357051849365
+        },
+        {
+          "segment_index": 81,
+          "distance": 0.0804283618927002
+        }
+      ]
+    },
+    {
+      "start": 826,
+      "end": 835,
+      "label": 22,
+      "base_index": 83,
+      "next_candidates": [
+        {
+          "segment_index": 23,
+          "distance": 0.04005849361419678
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.06879955530166626
+        },
+        {
+          "segment_index": 80,
+          "distance": 0.07673901319503784
+        },
+        {
+          "segment_index": 81,
+          "distance": 0.10183674097061157
+        },
+        {
+          "segment_index": 85,
+          "distance": 0.11118853092193604
+        }
+      ]
+    },
+    {
+      "start": 848,
+      "end": 849,
+      "label": 11,
+      "base_index": 84,
+      "next_candidates": [
+        {
+          "segment_index": 87,
+          "distance": 0.04600018262863159
+        },
+        {
+          "segment_index": 85,
+          "distance": 0.0750267505645752
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.08342534303665161
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.09023106098175049
+        },
+        {
+          "segment_index": 86,
+          "distance": 0.15412020683288574
+        }
+      ]
+    },
+    {
+      "start": 851,
+      "end": 857,
+      "label": 3,
+      "base_index": 85,
+      "next_candidates": [
+        {
+          "segment_index": 86,
+          "distance": 0.019460976123809814
+        },
+        {
+          "segment_index": 9,
+          "distance": 0.12481021881103516
+        },
+        {
+          "segment_index": 83,
+          "distance": 0.14986473321914673
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.1842373013496399
+        },
+        {
+          "segment_index": 82,
+          "distance": 0.2501105070114136
+        }
+      ]
+    },
+    {
+      "start": 858,
+      "end": 860,
+      "label": 3,
+      "base_index": 86,
+      "next_candidates": [
+        {
+          "segment_index": 85,
+          "distance": 0.008875250816345215
+        },
+        {
+          "segment_index": 87,
+          "distance": 0.026169180870056152
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.09283500909805298
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.1258312463760376
+        },
+        {
+          "segment_index": 23,
+          "distance": 0.13432323932647705
+        }
+      ]
+    },
+    {
+      "start": 861,
+      "end": 866,
+      "label": 11,
+      "base_index": 87,
+      "next_candidates": [
+        {
+          "segment_index": 85,
+          "distance": 0.04988497495651245
+        },
+        {
+          "segment_index": 23,
+          "distance": 0.059918761253356934
+        },
+        {
+          "segment_index": 75,
+          "distance": 0.09042012691497803
+        },
+        {
+          "segment_index": 86,
+          "distance": 0.09695780277252197
+        },
+        {
+          "segment_index": 88,
+          "distance": 0.10796582698822021
+        }
+      ]
+    },
+    {
+      "start": 884,
+      "end": 890,
+      "label": 11,
+      "base_index": 88,
+      "next_candidates": [
+        {
+          "segment_index": 75,
+          "distance": 0.032017529010772705
+        },
+        {
+          "segment_index": 74,
+          "distance": 0.0369073748588562
+        },
+        {
+          "segment_index": 24,
+          "distance": 0.04047584533691406
+        },
+        {
+          "segment_index": 23,
+          "distance": 0.064350426197052
+        },
+        {
+          "segment_index": 85,
+          "distance": 0.09489482641220093
+        }
+      ]
+    },
+    {
+      "start": 891,
+      "end": 895,
+      "label": 19,
+      "base_index": 89,
+      "next_candidates": [
+        {
+          "segment_index": 90,
+          "distance": 0.009589612483978271
+        },
+        {
+          "segment_index": 63,
+          "distance": 0.21016448736190796
+        },
+        {
+          "segment_index": 62,
+          "distance": 0.2184491753578186
+        },
+        {
+          "segment_index": 60,
+          "distance": 0.23537665605545044
+        },
+        {
+          "segment_index": 61,
+          "distance": 0.24624747037887573
+        }
+      ]
+    },
+    {
+      "start": 898,
+      "end": 903,
+      "label": 19,
+      "base_index": 90,
+      "next_candidates": [
+        {
+          "segment_index": 25,
+          "distance": 0.06270909309387207
+        },
+        {
+          "segment_index": 89,
+          "distance": 0.42133915424346924
+        },
+        {
+          "segment_index": 26,
+          "distance": 0.4818047285079956
+        },
+        {
+          "segment_index": 91,
+          "distance": 0.5074359178543091
+        },
+        {
+          "segment_index": 21,
+          "distance": 0.5413773059844971
+        }
+      ]
+    },
+    {
+      "start": 926,
+      "end": 931,
+      "label": 26,
+      "base_index": 91,
+      "next_candidates": [
+        {
+          "segment_index": 27,
+          "distance": 0.07218056917190552
+        },
+        {
+          "segment_index": 30,
+          "distance": 0.08164006471633911
+        },
+        {
+          "segment_index": 41,
+          "distance": 0.1534673571586609
+        },
+        {
+          "segment_index": 31,
+          "distance": 0.16571342945098877
+        },
+        {
+          "segment_index": 49,
+          "distance": 0.17178058624267578
         }
       ]
     }

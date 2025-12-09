@@ -21,7 +21,7 @@ def main():
             import umap  # type: ignore
         except Exception:
             raise RuntimeError("umap-learn is not installed. Try: pip install umap-learn")
-        reducer = umap.UMAP(n_components=2, n_neighbors=15, min_dist=0.1, metric='euclidean')
+        reducer = umap.UMAP(n_components=2, n_neighbors=100, min_dist=0.9, metric='cosine')
         Y = reducer.fit_transform(X)
     else:
         from sklearn.manifold import TSNE
