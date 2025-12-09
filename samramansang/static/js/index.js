@@ -25,12 +25,21 @@ let streamCtrl = null;
 // Current normalized poses
 let currentSegNorm = null;
 let currentLiveNorm = null;
+let neutralPose = null;  // 중립포즈 (서 있는 기본 자세)
 
-// Mode toggle: live vs segments
-// Start in segments mode; every 10 seconds toggle if the alternate source is available
-let mode = 'live'; // 'segments' | 'live'
+// Mode: neutral -> live -> segments
+// neutral: 사람이 없을 때 중립포즈 표시
+// live: 사람이 감지되면 라이브 포즈 표시
+// segments: 일정 시간 후 세그먼트 재생 시작
+let mode = 'neutral'; // 'neutral' | 'live' | 'segments'
 let lastToggleTs = 0;
-const TOGGLE_INTERVAL_MS = 10000;
+// Auto-segments playback state
+let personDetectedTs = null; // timestamp when person was first detected
+let personLeftTs = null; // timestamp when person left (for grace period)
+let segmentsStarted = false; // whether segments playback has started
+const PERSON_DETECTION_DELAY_MS = 2000; // 2 seconds delay before starting segments
+const PERSON_LEFT_GRACE_PERIOD_MS = 3000; // 3 seconds grace period before stopping
+let autoCheckTimer = null; // timer for checking person presence
 // Streaming buffer configuration
 const BLEND_N = 8;
 const BUFFER_LOW = 60;//240;       // frames; when remaining drops below this, append more
@@ -51,18 +60,92 @@ const bgToggleBtn = document.getElementById('bgToggleBtn');
 
 function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
 
-function maybeStartAfterReady() {
-    // Start playback only when segments are loaded and first live keypoints arrived
-    if (!playing && currentLiveNorm) {
-        if (Array.isArray(segments) && segments.length > 0) {
-            startSegments();
-            setStatus('Live pose received. Starting playback');
-        } else {
-            // Render immediately if pose is available even without segments
-            startSegments();
-            setStatus('Live pose received');
+function createNeutralPose() {
+    return [
+        [0.5, 0.15, 1.0],   // 0: nose (중앙 상단)
+        [0.52, 0.12, 1.0],  // 1: left_eye (반전: right_eye 위치)
+        [0.48, 0.12, 1.0],  // 2: right_eye (반전: left_eye 위치)
+        [0.54, 0.13, 1.0],  // 3: left_ear (반전: right_ear 위치)
+        [0.46, 0.13, 1.0],  // 4: right_ear (반전: left_ear 위치)
+        [0.55, 0.28, 1.0],  // 5: left_shoulder (반전: right_shoulder 위치)
+        [0.45, 0.28, 1.0],  // 6: right_shoulder (반전: left_shoulder 위치)
+        [0.60, 0.42, 1.0],  // 7: left_elbow (반전: right_elbow 위치)
+        [0.40, 0.42, 1.0],  // 8: right_elbow (반전: left_elbow 위치)
+        [0.62, 0.55, 1.0],  // 9: left_wrist (반전: right_wrist 위치)
+        [0.38, 0.55, 1.0],  // 10: right_wrist (반전: left_wrist 위치)
+        [0.52, 0.50, 1.0],  // 11: left_hip (반전: right_hip 위치)
+        [0.48, 0.50, 1.0],  // 12: right_hip (반전: left_hip 위치)
+        [0.52, 0.68, 1.0],  // 13: left_knee (반전: right_knee 위치)
+        [0.48, 0.68, 1.0],  // 14: right_knee (반전: left_knee 위치)
+        [0.52, 0.88, 1.0],  // 15: left_ankle (반전: right_ankle 위치)
+        [0.48, 0.88, 1.0],  // 16: right_ankle (반전: left_ankle 위치)
+    ];
+}
+
+// 초기화 시 중립포즈 생성
+function initializeNeutralPose() {
+    neutralPose = createNeutralPose();
+}
+
+function checkPoseValidForPlayback(normKpts) {
+    if (!normKpts || !Array.isArray(normKpts) || normKpts.length === 0) return false;
+
+    const cw = overlay?.width || stageW || 1280;
+    const ch = overlay?.height || stageH || 720;
+    const MAX_HEIGHT_RATIO = 0.8; // 80% of screen height
+    const MIN_CONFIDENCE = 0.2; // minimum confidence score for a keypoint to be considered valid
+
+    // First pass: Check if ALL keypoints have sufficient confidence
+    for (let i = 0; i < normKpts.length; i++) {
+        const kpt = normKpts[i];
+        if (!kpt || !Array.isArray(kpt) || kpt.length < 2) return false;
+
+        const conf = kpt.length > 2 ? Number(kpt[2]) : 1.0;
+
+        // All keypoints must have sufficient confidence
+        if (conf < MIN_CONFIDENCE) {
+            return false;
         }
     }
+
+    // Second pass: Calculate y values and check bounds (only if all passed confidence check)
+    let minY = Infinity;
+    let maxY = -Infinity;
+    let allInBounds = true;
+
+    for (let i = 0; i < normKpts.length; i++) {
+        const kpt = normKpts[i];
+        const x = Number(kpt[0]);
+        const y = Number(kpt[1]);
+
+        // Check if keypoint is within normalized bounds (0-1)
+        if (x < 0 || x > 1 || y < 0 || y > 1) {
+            allInBounds = false;
+        }
+
+        // Convert to screen coordinates for height calculation
+        const screenY = y * ch;
+        minY = Math.min(minY, screenY);
+        maxY = Math.max(maxY, screenY);
+    }
+
+    // Check if all keypoints are within bounds
+    if (!allInBounds) return false;
+
+    // Calculate pose height
+    const poseHeight = maxY - minY;
+    const maxAllowedHeight = ch * MAX_HEIGHT_RATIO;
+
+    // Check if pose height is less than 80% of screen height
+    return poseHeight < maxAllowedHeight;
+}
+
+function maybeStartAfterReady() {
+    // Start playback if not already playing
+    if (!playing) {
+        startSegments();
+    }
+    // 상태 전환은 checkPersonAndControlPlayback에서 처리됨
 }
 
 function resizeRenderer() {
@@ -179,6 +262,14 @@ function buildPlaybackFramesFromSegments() {
     playbackFrames = [];
     playIdx = 0;
     if (!Array.isArray(segments) || segments.length === 0) return;
+
+    // Add current live pose as starting point so segments align to it
+    if (currentLiveNorm && Array.isArray(currentLiveNorm) && currentLiveNorm.length === 17) {
+        const w = stageW || 1280;
+        const h = stageH || 720;
+        playbackFrames.push({ width: w, height: h, kpts: currentLiveNorm, fps: 30 });
+    }
+
     streamCtrl = makeStreamingChain(windowsIndex, jsonlMap, segments, {
         blendN: BLEND_N,
         bufferLow: BUFFER_LOW,
@@ -193,6 +284,14 @@ function buildPlaybackFramesFromSegments() {
 function ensurePlaybackBuffer() {
     if (mode === 'live') { ensureLiveBuffer(); return; }
     if (!streamCtrl) return;
+
+    // If playbackFrames is empty or we're transitioning from live, add current live pose as reference
+    if (playbackFrames.length === 0 && currentLiveNorm && Array.isArray(currentLiveNorm) && currentLiveNorm.length === 17) {
+        const w = stageW || 1280;
+        const h = stageH || 720;
+        playbackFrames.push({ width: w, height: h, kpts: currentLiveNorm, fps: 30 });
+    }
+
     streamCtrl.ensureBuffer(playbackFrames, playIdx, stageW || 1280, stageH || 720);
 }
 
@@ -239,59 +338,145 @@ function compactPlaybackFrames() {
 function stepPlayback() {
     if (!playing) return;
 
-    // In Live mode, render currentLiveNorm directly
+    // Neutral mode: 중립포즈만 표시
+    // 상태 전환은 checkPersonAndControlPlayback()에서 처리됨
+    if (mode === 'neutral') {
+        // 블렌딩 중인지 확인 (playbackFrames에 블렌드 프레임이 있는 경우)
+        if (playbackFrames.length > 0 && playIdx < playbackFrames.length) {
+            // 블렌딩 중이면 playbackFrames에서 렌더링
+            const cur = playbackFrames[playIdx++];
+            if (cur && cur.kpts) {
+                renderSingle(cur.kpts, 'neutral');
+                // 블렌드 완료 확인
+                if (cur.switchToNeutral === true) {
+                    // 블렌드 완료, 이제 중립포즈로 전환
+                    playbackFrames.length = 0;
+                    playIdx = 0;
+                }
+            }
+        } else {
+            // 블렌딩 완료 후 또는 블렌딩 없이 중립포즈 렌더링
+            if (neutralPose) {
+                renderSingle(neutralPose, 'neutral');
+            }
+        }
+        playTimer = setTimeout(stepPlayback, 33); // ~30fps
+        return;
+    }
+
+    // Live mode: 라이브 포즈 표시
+    // 상태 전환은 checkPersonAndControlPlayback()에서 처리됨
     if (mode === 'live') {
-        if (currentLiveNorm) {
-            renderSingle(currentLiveNorm, 'live');
+        // 블렌딩 중인지 확인 (playbackFrames에 블렌드 프레임이 있는 경우)
+        if (playbackFrames.length > 0 && playIdx < playbackFrames.length) {
+            // 블렌딩 중이면 playbackFrames에서 렌더링
+            const cur = playbackFrames[playIdx++];
+            if (cur && cur.kpts) {
+                renderSingle(cur.kpts, 'live');
+                // 블렌드 완료 확인
+                if (cur.switchToLive === true) {
+                    // 블렌드 완료, 이제 라이브 포즈로 전환
+                    playbackFrames.length = 0;
+                    playIdx = 0;
+                } else if (cur.switchToNeutral === true) {
+                    // 중립으로 전환하는 블렌드 완료
+                    playbackFrames.length = 0;
+                    playIdx = 0;
+                }
+            }
+        } else {
+            // 블렌딩 완료 후 또는 블렌딩 없이 라이브 포즈 렌더링
+            if (currentLiveNorm) {
+                renderSingle(currentLiveNorm, 'live');
+            } else if (neutralPose) {
+                // 포즈 데이터가 없으면 중립포즈 표시 (임시)
+                renderSingle(neutralPose, 'neutral');
+            }
         }
         // In Live mode, render quickly with low latency
         playTimer = setTimeout(stepPlayback, 33); // ~30fps
         return;
     }
 
-    // If no segments, render only live pose
+    // Segments mode: 세그먼트 재생
+    // 상태 전환은 checkPersonAndControlPlayback()에서 처리됨
+    if (mode === 'segments') {
+        // If no segments, fallback to live/neutral
+        if (!Array.isArray(segments) || segments.length === 0) {
+            if (currentLiveNorm) {
+                renderSingle(currentLiveNorm, 'live');
+            } else if (neutralPose) {
+                renderSingle(neutralPose, 'neutral');
+            }
+            playTimer = setTimeout(stepPlayback, 33); // ~30fps
+            return;
+        }
+
+        // Segments mode: read frames from playbackFrames and render
+        if (!playbackFrames.length) {
+            buildPlaybackFramesFromSegments();
+            // Retry if no frames after buildPlaybackFramesFromSegments
+            if (!playbackFrames.length) {
+                ensurePlaybackBuffer();
+            }
+        }
+        // Top-up buffer proactively
+        ensurePlaybackBuffer();
+        if (!playbackFrames.length) {
+            setStatus('No segment frames to play. Please check segments.');
+            playTimer = setTimeout(stepPlayback, 100); // Retry after a moment
+            return;
+        }
+        if (playIdx >= playbackFrames.length) {
+            // If we ever catch up to the buffer end, try topping up again
+            ensurePlaybackBuffer();
+            if (playIdx >= playbackFrames.length) {
+                // Still no frames; pause briefly and retry
+                playTimer = setTimeout(stepPlayback, 16);
+                return;
+            }
+        }
+        const cur = playbackFrames[playIdx++];
+        // update current segment normalized pose
+        currentSegNorm = cur.kpts || null;
+        renderSingle(cur.kpts, 'seg');
+
+        // Check if this frame marks the switch to live mode (after blend completes)
+        // 상태 전환은 checkPersonAndControlPlayback()에서 처리되지만,
+        // 블렌드 완료 시점은 여기서 확인
+        if (cur && cur.switchToLive === true) {
+            // 블렌드 완료 후 상태는 checkPersonAndControlPlayback()이 처리함
+            // 여기서는 단순히 상태만 업데이트
+            mode = 'live';
+            setStatus(`Mode: ${mode}`);
+        }
+
+        // Check if this frame marks the switch to neutral mode (after blend completes)
+        if (cur && cur.switchToNeutral === true) {
+            // 블렌드 완료 후 neutral 모드로 전환
+            mode = 'neutral';
+            stopSegments();
+            setStatus(`Mode: ${mode}`);
+        }
+
+        const prev = playIdx > 1 ? playbackFrames[playIdx - 2] : null; // since playIdx was incremented
+        let delay = schedule(prev, cur, 1.0);
+        if (cur && cur.live === true) delay = 0; // minimize latency for live frames
+        compactPlaybackFrames();
+        playTimer = setTimeout(stepPlayback, Math.max(0, Math.floor(delay * 1000)));
+        return;
+    }
+
+    // If no segments, render only live pose (fallback)
     if (!Array.isArray(segments) || segments.length === 0) {
-        if (currentLiveNorm) {
+        if (mode === 'live' && currentLiveNorm) {
             renderSingle(currentLiveNorm, 'live');
+        } else if (neutralPose) {
+            renderSingle(neutralPose, 'neutral');
         }
         playTimer = setTimeout(stepPlayback, 33); // ~30fps
         return;
     }
-
-    // Segments mode: read frames from playbackFrames and render
-    if (!playbackFrames.length) {
-        buildPlaybackFramesFromSegments();
-        // Retry if no frames after buildPlaybackFramesFromSegments
-        if (!playbackFrames.length) {
-            ensurePlaybackBuffer();
-        }
-    }
-    // Top-up buffer proactively
-    ensurePlaybackBuffer();
-    if (!playbackFrames.length) {
-        setStatus('No segment frames to play. Please check segments.');
-        // In segments mode, stop playback and don't switch to live mode
-        playTimer = setTimeout(stepPlayback, 100); // Retry after a moment
-        return;
-    }
-    if (playIdx >= playbackFrames.length) {
-        // If we ever catch up to the buffer end, try topping up again
-        ensurePlaybackBuffer();
-        if (playIdx >= playbackFrames.length) {
-            // Still no frames; pause briefly and retry
-            playTimer = setTimeout(stepPlayback, 16);
-            return;
-        }
-    }
-    const cur = playbackFrames[playIdx++];
-    // update current segment normalized pose
-    currentSegNorm = cur.kpts || null;
-    renderSingle(cur.kpts, 'seg');
-    const prev = playIdx > 1 ? playbackFrames[playIdx - 2] : null; // since playIdx was incremented
-    let delay = schedule(prev, cur, 1.0);
-    if (cur && cur.live === true) delay = 0; // minimize latency for live frames
-    compactPlaybackFrames();
-    playTimer = setTimeout(stepPlayback, Math.max(0, Math.floor(delay * 1000)));
 }
 
 function startSegments() {
@@ -309,25 +494,171 @@ function toggleMode() {
     const now = Date.now();
     if (now - lastToggleTs < 500) return;
     lastToggleTs = now;
-    if (mode === 'segments') {
-        mode = 'live';
-        // Blend immediately from current segment pose to live at the current screen position
-        blendToLiveNow();
-    } else {
+
+    if (mode === 'neutral') {
+        // Neutral -> Live: 사람이 있으면 live로, 없으면 그대로
+        if (currentLiveNorm && checkPoseValidForPlayback(currentLiveNorm)) {
+            mode = 'live';
+            personDetectedTs = Date.now();
+            segmentsStarted = false;
+            if (!playing) {
+                startSegments();
+            }
+            setStatus('Mode: live - Manual switch');
+        } else {
+            setStatus('No valid person detected. Cannot switch to live mode.');
+        }
+    } else if (mode === 'live') {
+        // Live -> Segments: 수동으로 segments 모드로 전환
+        if (!currentLiveNorm) {
+            setStatus('No live pose available. Cannot switch to segments mode.');
+            return;
+        }
+
+        const isValid = checkPoseValidForPlayback(currentLiveNorm);
+        if (!isValid) {
+            setStatus('Pose invalid - cannot start segments playback (height must be < 80% of screen, all keypoints visible)');
+            return;
+        }
+
+        // Pose is valid, switch to segments mode
         mode = 'segments';
         // Reset sampling so the next seg->live will recompute
         resetLiveScaleSampling();
-        streamCtrl.resetPrev();
+        if (streamCtrl) {
+            streamCtrl.resetPrev();
+        }
+
+        // Blend smoothly from live to segments
+        blendToSegmentsNow();
+
+        // Start segments playback if not already playing
+        if (!playing) {
+            startSegments();
+        }
+
+        setStatus(`Mode: ${mode} - Manual switch to segments`);
+    } else if (mode === 'segments') {
+        // Segments -> Live: 라이브 모드로 전환
+        blendToLiveNow();
+        mode = 'live';
+        setStatus('Mode: live - Manual switch from segments');
     }
-    setStatus(`Mode: ${mode}`);
 }
 
 let autoToggleTimer = null;
 function autoToggleLoop() {
+    // Clear old timer if exists
     if (autoToggleTimer) { clearInterval(autoToggleTimer); autoToggleTimer = null; }
-    autoToggleTimer = setInterval(() => {
-        // toggleMode();
-    }, TOGGLE_INTERVAL_MS);
+    if (autoCheckTimer) { clearInterval(autoCheckTimer); autoCheckTimer = null; }
+
+    // Check person presence periodically (every 500ms)
+    autoCheckTimer = setInterval(() => {
+        checkPersonAndControlPlayback();
+    }, 500);
+}
+
+function checkPersonAndControlPlayback() {
+    const hasValidPerson = currentLiveNorm && checkPoseValidForPlayback(currentLiveNorm);
+
+    if (hasValidPerson) {
+        // Person is present and valid - reset grace period if it was active
+        if (personLeftTs !== null) {
+            personLeftTs = null; // Cancel grace period
+        }
+
+        // Neutral -> Live: 사람이 감지되면 live 모드로 전환
+        if (mode === 'neutral') {
+            // Blend from neutral to live
+            blendToLiveFromNeutral();
+            mode = 'live';
+            personDetectedTs = Date.now();
+            segmentsStarted = false;
+            setStatus('Mode: live - Person detected (blending...)');
+            if (!playing) {
+                startSegments(); // 재생 시작 (live 모드로 렌더링)
+            }
+            return;
+        }
+
+        // Live -> Segments: 일정 시간 후 segments 모드로 전환
+        if (mode === 'live') {
+            if (personDetectedTs === null) {
+                personDetectedTs = Date.now();
+                segmentsStarted = false;
+            } else {
+                const elapsed = Date.now() - personDetectedTs;
+                if (!segmentsStarted && elapsed >= PERSON_DETECTION_DELAY_MS) {
+                    // 2초 후 segments 모드로 전환
+                    mode = 'segments';
+                    resetLiveScaleSampling();
+                    if (streamCtrl) {
+                        streamCtrl.resetPrev();
+                    }
+                    // Blend smoothly from live to segments
+                    blendToSegmentsNow();
+                    if (!playing) {
+                        startSegments();
+                    }
+                    segmentsStarted = true;
+                    setStatus('Mode: segments - Playback started');
+                }
+            }
+            return;
+        }
+
+        // Segments 모드: 사람이 있으면 계속 재생
+        if (mode === 'segments') {
+            if (!playing) {
+                startSegments();
+            }
+            return;
+        }
+    } else {
+        // Person is not present or invalid
+        // Segments -> Neutral: 사람이 사라지면 중립으로 전환
+        if (mode === 'segments') {
+            if (personLeftTs === null) {
+                personLeftTs = Date.now();
+                setStatus('Person left. Stopping in 3 seconds...');
+            } else {
+                // Check if grace period has passed
+                const elapsed = Date.now() - personLeftTs;
+                if (elapsed >= PERSON_LEFT_GRACE_PERIOD_MS) {
+                    // Grace period passed, blend to neutral
+                    blendToNeutralFromSegments();
+                    personDetectedTs = null;
+                    personLeftTs = null;
+                    segmentsStarted = false;
+                    // Don't stop segments immediately - let blend complete
+                    mode = 'neutral';
+                    setStatus('Mode: neutral - Person left (blending...)');
+                }
+            }
+            return;
+        }
+
+        // Live -> Neutral: 사람이 사라지면 중립으로 전환
+        if (mode === 'live') {
+            // Blend from live to neutral
+            blendToNeutralFromLive();
+            mode = 'neutral';
+            personDetectedTs = null;
+            personLeftTs = null;
+            segmentsStarted = false;
+            setStatus('Mode: neutral - Person left (blending...)');
+            return;
+        }
+
+        // Neutral 모드: 이미 중립이면 그대로 유지
+        if (mode === 'neutral') {
+            // Reset timers
+            personDetectedTs = null;
+            personLeftTs = null;
+            segmentsStarted = false;
+            return;
+        }
+    }
 }
 
 function blendToLiveNow() {
@@ -340,15 +671,125 @@ function blendToLiveNow() {
                 ? playbackFrames[playIdx - 1].kpts
                 : null;
         if (!curKpts) return;
+
+        // Validate keypoints
+        if (!Array.isArray(curKpts) || curKpts.length !== 17) return;
+        if (!Array.isArray(currentLiveNorm) || currentLiveNorm.length !== 17) return;
+
         // Start a new sampling session and set reference pose
         resetLiveScaleSampling();
         liveScaleRefKpts = curKpts;
         const w = stageW || 1280;
         const h = stageH || 720;
         const prevItem = { width: w, height: h, kpts: curKpts, fps: 30 };
-        const liveItem = { width: w, height: h, kpts: currentLiveNorm, fps: 30 };
+        const liveItem = { width: w, height: h, kpts: currentLiveNorm, fps: 30, switchToLive: true }; // Mark to switch to live after this frame
         const blends = createBlendFramesScaled(prevItem, 1.0, [0, 0], liveItem, 1.0, [0, 0], BLEND_N) || [];
-        playbackFrames.splice(playIdx, playbackFrames.length - playIdx, ...blends, liveItem);
+        const removedCount = playbackFrames.length - playIdx;
+        playbackFrames.splice(playIdx, removedCount, ...blends, liveItem);
+    } catch (e) { /* ignore */ }
+}
+
+function blendToLiveFromNeutral() {
+    try {
+        if (!currentLiveNorm || !neutralPose) return;
+
+        // Validate keypoints
+        if (!Array.isArray(neutralPose) || neutralPose.length !== 17) return;
+        if (!Array.isArray(currentLiveNorm) || currentLiveNorm.length !== 17) return;
+
+        const w = stageW || 1280;
+        const h = stageH || 720;
+        const neutralItem = { width: w, height: h, kpts: neutralPose, fps: 30 };
+        const liveItem = { width: w, height: h, kpts: currentLiveNorm, fps: 30, switchToLive: true };
+        const blends = createBlendFramesScaled(neutralItem, 1.0, [0, 0], liveItem, 1.0, [0, 0], BLEND_N) || [];
+
+        // Clear playbackFrames and add blend frames
+        playbackFrames.length = 0;
+        playIdx = 0;
+        playbackFrames.push(...blends, liveItem);
+    } catch (e) { /* ignore */ }
+}
+
+function blendToNeutralFromSegments() {
+    try {
+        if (!neutralPose) return;
+
+        // Determine current on-screen pose (prefer last rendered segment pose)
+        const curKpts = (currentSegNorm && Array.isArray(currentSegNorm))
+            ? currentSegNorm
+            : (playIdx > 0 && playbackFrames[playIdx - 1] && Array.isArray(playbackFrames[playIdx - 1].kpts))
+                ? playbackFrames[playIdx - 1].kpts
+                : null;
+        if (!curKpts) return;
+
+        // Validate keypoints
+        if (!Array.isArray(curKpts) || curKpts.length !== 17) return;
+        if (!Array.isArray(neutralPose) || neutralPose.length !== 17) return;
+
+        const w = stageW || 1280;
+        const h = stageH || 720;
+        const segItem = { width: w, height: h, kpts: curKpts, fps: 30 };
+        const neutralItem = { width: w, height: h, kpts: neutralPose, fps: 30, switchToNeutral: true };
+        const blends = createBlendFramesScaled(segItem, 1.0, [0, 0], neutralItem, 1.0, [0, 0], BLEND_N) || [];
+
+        // Insert blend frames at current position
+        const removedCount = playbackFrames.length - playIdx;
+        playbackFrames.splice(playIdx, removedCount, ...blends, neutralItem);
+    } catch (e) { /* ignore */ }
+}
+
+function blendToNeutralFromLive() {
+    try {
+        if (!currentLiveNorm || !neutralPose) return;
+
+        // Validate keypoints
+        if (!Array.isArray(currentLiveNorm) || currentLiveNorm.length !== 17) return;
+        if (!Array.isArray(neutralPose) || neutralPose.length !== 17) return;
+
+        const w = stageW || 1280;
+        const h = stageH || 720;
+        const liveItem = { width: w, height: h, kpts: currentLiveNorm, fps: 30 };
+        const neutralItem = { width: w, height: h, kpts: neutralPose, fps: 30, switchToNeutral: true };
+        const blends = createBlendFramesScaled(liveItem, 1.0, [0, 0], neutralItem, 1.0, [0, 0], BLEND_N) || [];
+
+        // Clear playbackFrames and add blend frames
+        playbackFrames.length = 0;
+        playIdx = 0;
+        playbackFrames.push(...blends, neutralItem);
+    } catch (e) { /* ignore */ }
+}
+
+function blendToSegmentsNow() {
+    try {
+        if (!currentLiveNorm) return;
+        // Get current live pose as starting point
+        const liveKpts = currentLiveNorm;
+
+        // Get the first segment frame to blend to
+        if (!playbackFrames.length) {
+            buildPlaybackFramesFromSegments();
+            if (!playbackFrames.length) {
+                ensurePlaybackBuffer();
+            }
+        }
+
+        if (!playbackFrames.length) return;
+
+        // Get the first segment frame
+        const firstSegFrame = playbackFrames[0];
+        if (!firstSegFrame || !Array.isArray(firstSegFrame.kpts)) return;
+
+        const w = stageW || 1280;
+        const h = stageH || 720;
+        const liveItem = { width: w, height: h, kpts: liveKpts, fps: 30 };
+        const segItem = { width: w, height: h, kpts: firstSegFrame.kpts, fps: 30 };
+
+        // Create blend frames from live to first segment
+        const blends = createBlendFramesScaled(liveItem, 1.0, [0, 0], segItem, 1.0, [0, 0], BLEND_N) || [];
+
+        // Insert blend frames at the beginning of playbackFrames
+        playbackFrames.unshift(...blends);
+        playIdx = 0; // Reset play index to start from blends
     } catch (e) { /* ignore */ }
 }
 
@@ -384,13 +825,20 @@ function initPoseWebSocket() {
                         if (!playing) {
                             startSegments();
                         }
-                        // Render current pose immediately
+                        // Render current pose immediately if valid, otherwise show neutral pose
                         if (currentLiveNorm && renderer) {
-                            renderSingle(currentLiveNorm, 'live');
+                            if (checkPoseValidForPlayback(currentLiveNorm)) {
+                                renderSingle(currentLiveNorm, 'live');
+                            } else if (neutralPose) {
+                                renderSingle(neutralPose, 'neutral');
+                            }
                         }
                     }
                 }
                 // If playing is true and mode is live, it will be automatically rendered in stepPlayback
+            } else {
+                // 포즈 데이터가 없으면 중립포즈로 설정 (사람이 없음)
+                currentLiveNorm = null;
             }
         },
         onMessage: (data) => {
@@ -412,6 +860,9 @@ async function startAll() {
     resizeRenderer();
     window.addEventListener('resize', resizeRenderer);
 
+    // Initialize neutral pose
+    initializeNeutralPose();
+
     // Load segments (required for segments mode)
     await fetchSegmentsFinal();
 
@@ -425,14 +876,12 @@ async function startAll() {
     // WebSocket mode: use image element
     if (bgImageEl) bgImageEl.style.display = bgVisible ? 'block' : 'none';
 
-    // In segments mode, start playback immediately when segments are loaded
-    if (mode === 'segments' && Array.isArray(segments) && segments.length > 0) {
-        startSegments();
-        setStatus(`Segments mode: Starting playback of ${segments.length} segments`);
-    } else {
-        // In Live mode or if no segments, wait for live pose
-        maybeStartAfterReady();
-    }
+    // Start playback in neutral mode (will transition to live/segments automatically)
+    startSegments();
+    setStatus(`Mode: ${mode} - Ready`);
+
+    // Start auto-toggle loop
+    autoToggleLoop();
 }
 
 toggleBtn?.addEventListener('click', toggleMode);
