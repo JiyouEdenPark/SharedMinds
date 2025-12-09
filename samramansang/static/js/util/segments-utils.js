@@ -238,6 +238,55 @@ export function chainSegments(windowsIndex, jsonlMap, list, blendN=8, fallbackW=
     return combined;
 }
 
+// Check if normalized pose would be out of bounds when rendered
+export function checkPoseInBounds(normKpts, canvasW=1280, canvasH=720, maxHeightRatio=0.8, minConfidence=0.2){
+    if (!normKpts || !Array.isArray(normKpts) || normKpts.length === 0) return false;
+
+    // First pass: Check if ALL keypoints have sufficient confidence
+    for (let i = 0; i < normKpts.length; i++) {
+        const kpt = normKpts[i];
+        if (!kpt || !Array.isArray(kpt) || kpt.length < 2) return false;
+
+        const conf = kpt.length > 2 ? Number(kpt[2]) : 1.0;
+
+        // All keypoints must have sufficient confidence
+        if (conf < minConfidence) {
+            return false;
+        }
+    }
+
+    // Second pass: Calculate y values and check bounds (only if all passed confidence check)
+    let minY = Infinity;
+    let maxY = -Infinity;
+    let allInBounds = true;
+
+    for (let i = 0; i < normKpts.length; i++) {
+        const kpt = normKpts[i];
+        const x = Number(kpt[0]);
+        const y = Number(kpt[1]);
+
+        // Check if keypoint is within normalized bounds (0-1)
+        if (x < 0 || x > 1 || y < 0 || y > 1) {
+            allInBounds = false;
+        }
+
+        // Convert to screen coordinates for height calculation
+        const screenY = y * canvasH;
+        minY = Math.min(minY, screenY);
+        maxY = Math.max(maxY, screenY);
+    }
+
+    // Check if all keypoints are within bounds
+    if (!allInBounds) return false;
+
+    // Calculate pose height
+    const poseHeight = maxY - minY;
+    const maxAllowedHeight = canvasH * maxHeightRatio;
+
+    // Check if pose height is less than maxHeightRatio of screen height
+    return poseHeight < maxAllowedHeight;
+}
+
 // Streaming chain controller: incrementally appends next segment frames with proper boundary blending
 export function makeStreamingChain(windowsIndex, jsonlMap, segments, options = {}){
     const cfg = {
@@ -249,6 +298,12 @@ export function makeStreamingChain(windowsIndex, jsonlMap, segments, options = {
         reorder: (typeof options.reorder === 'boolean') ? options.reorder : true,
         preferEmbeddedNext: (typeof options.preferEmbeddedNext === 'boolean') ? options.preferEmbeddedNext : true,
         candidatePick: (options.candidatePick === 'random' || options.candidatePick === 'best') ? options.candidatePick : 'random',
+        checkBounds: typeof options.checkBounds === 'boolean' ? options.checkBounds : false,
+        canvasW: typeof options.canvasW === 'number' ? options.canvasW : 1280,
+        canvasH: typeof options.canvasH === 'number' ? options.canvasH : 720,
+        maxHeightRatio: typeof options.maxHeightRatio === 'number' ? options.maxHeightRatio : 0.8,
+        minConfidence: typeof options.minConfidence === 'number' ? options.minConfidence : 0.2,
+        checkBoundsSampleRate: typeof options.checkBoundsSampleRate === 'number' ? options.checkBoundsSampleRate : 1, // Check every Nth frame (1 = all frames)
     };
 
     let orderedSegments = [];
@@ -267,6 +322,97 @@ export function makeStreamingChain(windowsIndex, jsonlMap, segments, options = {
         nextSegIdx = 0;
     }
 
+    function checkSegmentInBounds(seg){
+        if (!cfg.checkBounds || !hasWindows()) return true; // Skip check if disabled or no windows
+        if (!seg) return false;
+        
+        // Calculate scale and offset that would be applied to this segment
+        let segScale = prevScale;
+        let segOffset = [0,0];
+        
+        if (prevSeg){
+            const prevEndItem = getWindowEdgeFrame(windowsIndex, jsonlMap, prevSeg.end, true);
+            const nextStartItem = getWindowEdgeFrame(windowsIndex, jsonlMap, seg.start, false);
+            if (prevEndItem && nextStartItem){
+                const prevK0 = getNormKpts(prevEndItem);
+                const nextK0 = getNormKpts(nextStartItem);
+                const sBoundary = robustScaleRatio(prevK0, nextK0);
+                segScale = prevScale * sBoundary;
+                const prevScaledK = prevK0.map(p => [Number(p[0])*prevScale + (prevOffset?.[0]||0), Number(p[1])*prevScale + (prevOffset?.[1]||0), p.length>2?Number(p[2]):1.0]);
+                const nextScaledK = nextK0.map(p => [Number(p[0])*segScale, Number(p[1])*segScale, p.length>2?Number(p[2]):1.0]);
+                const aPrev = anchorFromK(prevScaledK);
+                const aNext = anchorFromK(nextScaledK);
+                segOffset = [ aPrev[0] - aNext[0], aPrev[1] - aNext[1] ];
+            }
+        }
+        
+        // Check all frames in the segment (or sample them based on checkBoundsSampleRate)
+        const T = windowsIndex.window || 32;
+        const ws = Number(seg.start||0), we = Number(seg.end||ws);
+        if (ws > we) return true; // Invalid segment
+        
+        let prevBase = null;
+        let prevEnd = -1;
+        let frameCount = 0;
+        
+        for (let wi = ws; wi <= we; wi++){
+            const wrec = windowsIndex.windows[wi];
+            if (!wrec) continue;
+            
+            const base = (wrec.file ? wrec.file.replace(/\.jsonl$/, '') : '');
+            const arr = jsonlMap[base];
+            if (!arr) {
+                prevBase = null;
+                prevEnd = -1;
+                continue;
+            }
+            
+            const startFrame = Number(wrec.start||0);
+            const endFrame = startFrame + T - 1;
+            let sfi = startFrame;
+            if (prevBase === base && prevEnd >= 0) {
+                sfi = Math.max(sfi, prevEnd + 1);
+            }
+            
+            for (let fi = sfi; fi <= endFrame && fi < arr.length; fi++){
+                // Sample frames based on checkBoundsSampleRate
+                if (frameCount % cfg.checkBoundsSampleRate !== 0) {
+                    frameCount++;
+                    continue;
+                }
+                frameCount++;
+                
+                const item = arr[fi];
+                if (!item) continue;
+                
+                // Get normalized keypoints
+                const normKpts = getNormKpts(item);
+                if (!normKpts || normKpts.length === 0) continue; // Skip if no keypoints
+                
+                // Apply scale and offset to normalized keypoints (same as in appendSegmentFrames)
+                const scaledKpts = normKpts.map(p => {
+                    const dx = (segOffset && segOffset.length===2) ? Number(segOffset[0]) : 0;
+                    const dy = (segOffset && segOffset.length===2) ? Number(segOffset[1]) : 0;
+                    const x = Math.max(0, Math.min(1, Number(p[0]) * segScale + dx));
+                    const y = Math.max(0, Math.min(1, Number(p[1]) * segScale + dy));
+                    const s = p.length>2 ? Number(p[2]) : 1.0;
+                    return [x, y, s];
+                });
+                
+                // Check if this frame would be out of bounds
+                if (!checkPoseInBounds(scaledKpts, cfg.canvasW, cfg.canvasH, cfg.maxHeightRatio, cfg.minConfidence)){
+                    return false; // Found a frame that would be out of bounds
+                }
+            }
+            
+            prevBase = base;
+            prevEnd = endFrame;
+        }
+        
+        // All checked frames are in bounds
+        return true;
+    }
+
     function chooseNextSegment(){
         // If we have embedded next_candidates on the previous segment, prefer them
         if (cfg.preferEmbeddedNext && prevSeg && Array.isArray(prevSeg.next_candidates) && prevSeg.next_candidates.length>0){
@@ -274,6 +420,23 @@ export function makeStreamingChain(windowsIndex, jsonlMap, segments, options = {
                 .map(n => ({ idx: Number(n.segment_index), distance: Number(n.distance||0) }))
                 .filter(n => Number.isFinite(n.idx) && n.idx>=0 && n.idx < (segments?.length||0));
             if (indices.length){
+                // Filter out segments that would be out of bounds
+                const validIndices = indices.filter(n => {
+                    const seg = segments[n.idx];
+                    return checkSegmentInBounds(seg);
+                });
+                
+                // If we have valid candidates, pick from them
+                if (validIndices.length > 0){
+                    if (cfg.candidatePick === 'random'){
+                        const c = validIndices[Math.floor(Math.random()*validIndices.length)];
+                        return segments[c.idx];
+                    } else {
+                        const sorted = validIndices.slice().sort((a,b) => a.distance - b.distance);
+                        return segments[sorted[0].idx];
+                    }
+                }
+                // If no valid candidates, try without bounds check (fallback)
                 if (cfg.candidatePick === 'random'){
                     const c = indices[Math.floor(Math.random()*indices.length)];
                     return segments[c.idx];
@@ -285,6 +448,27 @@ export function makeStreamingChain(windowsIndex, jsonlMap, segments, options = {
         }
         // Fallback to ordered list progression
         if (!orderedSegments || !orderedSegments.length) ensureOrder();
+        
+        // Try to find a valid segment from the ordered list
+        if (cfg.checkBounds && orderedSegments && orderedSegments.length > 0){
+            let searchIdx = nextSegIdx;
+            let attempts = 0;
+            const maxAttempts = orderedSegments.length;
+            while (attempts < maxAttempts){
+                const seg = orderedSegments[searchIdx];
+                if (checkSegmentInBounds(seg)){
+                    // Found valid segment, but don't update nextSegIdx here (it will be updated in appendNext)
+                    return seg;
+                }
+                // Move to next segment for search (but don't update nextSegIdx)
+                searchIdx++;
+                if (searchIdx >= orderedSegments.length) searchIdx = 0;
+                attempts++;
+            }
+            // If no valid segment found after checking all, return current one anyway
+            return orderedSegments[nextSegIdx];
+        }
+        
         return orderedSegments[nextSegIdx];
     }
 

@@ -277,6 +277,11 @@ function buildPlaybackFramesFromSegments() {
         compactThreshold: COMPACT_THRESHOLD,
         compactKeepPrev: COMPACT_KEEP_PREV,
         reorder: true,
+        checkBounds: true, // Enable bounds checking for segment selection
+        canvasW: stageW || 1280,
+        canvasH: stageH || 720,
+        maxHeightRatio: 0.8, // Same as checkPoseValidForPlayback
+        minConfidence: 0.2, // Same as checkPoseValidForPlayback
     });
     streamCtrl.seed(playbackFrames);
 }
