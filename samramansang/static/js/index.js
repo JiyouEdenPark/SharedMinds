@@ -37,7 +37,7 @@ let lastToggleTs = 0;
 let personDetectedTs = null; // timestamp when person was first detected
 let personLeftTs = null; // timestamp when person left (for grace period)
 let segmentsStarted = false; // whether segments playback has started
-const PERSON_DETECTION_DELAY_MS = 2000; // 2 seconds delay before starting segments
+const PERSON_DETECTION_DELAY_MS = 20000; // 20 seconds delay before starting segments
 const PERSON_LEFT_GRACE_PERIOD_MS = 3000; // 3 seconds grace period before stopping
 let autoCheckTimer = null; // timer for checking person presence
 // Streaming buffer configuration
