@@ -42,8 +42,12 @@ function updateLegend() {
 
     let legendHTML = '';
     for (const label of uniqueLabels) {
-        const color = label === -1 ? '#6b7280' : colorPalette[label % colorPalette.length];
-        const labelText = label === -1 ? 'Noise' : `Cluster ${label}`;
+        // 노이즈는 범례에서 제외
+        if (label === -1) {
+            continue;
+        }
+        const color = colorPalette[label % colorPalette.length];
+        const labelText = `Cluster ${label}`;
         const count = labels.filter(l => l === label).length;
 
         legendHTML += `
@@ -114,20 +118,19 @@ function draw() {
     ];
 
     for (let i = 0; i < points.length; i++) {
-        const [x, y] = toCanvas(points[i][0], points[i][1]);
         if (labels) {
             const label = labels[i];
+            // 노이즈 포인트는 표시하지 않음
             if (label === -1) {
-                // 노이즈 포인트는 회색으로 표시
-                ctx.fillStyle = '#6b7280';
-            } else {
-                // 클러스터 라벨에 따라 색상 할당
-                const colorIndex = label % colorPalette.length;
-                ctx.fillStyle = colorPalette[colorIndex];
+                continue;
             }
+            // 클러스터 라벨에 따라 색상 할당
+            const colorIndex = label % colorPalette.length;
+            ctx.fillStyle = colorPalette[colorIndex];
         } else {
             ctx.fillStyle = '#60a5fa';
         }
+        const [x, y] = toCanvas(points[i][0], points[i][1]);
         ctx.beginPath();
         ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fill();
@@ -310,6 +313,10 @@ function findNearestPoint(mx, my, tol = 6) {
     if (!points) return -1;
     let best = -1, bestd = tol * tol;
     for (let i = 0; i < points.length; i++) {
+        // 노이즈 포인트는 제외
+        if (labels && labels[i] === -1) {
+            continue;
+        }
         const [cx, cy] = toCanvas(points[i][0], points[i][1]);
         const dx = mx - cx, dy = my - cy;
         const d2 = dx * dx + dy * dy;

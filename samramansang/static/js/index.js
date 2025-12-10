@@ -103,10 +103,33 @@ async function stopRecording() {
 
         if (result.status === 'ok' && !result.is_recording) {
             isRecording = false;
-            console.log('Auto-recording stopped');
+            console.log('Auto-recording stopped (saved)');
         }
     } catch (error) {
         console.error('Recording stop error:', error);
+    }
+}
+
+async function cancelRecording() {
+    if (!isRecording) return; // Not recording
+
+    try {
+        const response = await fetch('/websocket/cancel-recording', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'ok' && !result.is_recording) {
+            isRecording = false;
+            console.log('Auto-recording cancelled (not saved)');
+        }
+    } catch (error) {
+        console.error('Recording cancel error:', error);
     }
 }
 
@@ -711,8 +734,8 @@ function checkPersonAndControlPlayback() {
                     segmentsStarted = false;
                     // Don't stop segments immediately - let blend complete
                     mode = 'neutral';
-                    // Stop recording when leaving segments mode (going to neutral)
-                    stopRecording();
+                    // segments에서 neutral로 전환: 이미 segments로 전환 시 저장 완료되었으므로 취소만 (혹시 녹화 중이면)
+                    cancelRecording();
                     setStatus('Mode: neutral - Person left (blending...)');
                 }
             }
@@ -727,8 +750,8 @@ function checkPersonAndControlPlayback() {
             personDetectedTs = null;
             personLeftTs = null;
             segmentsStarted = false;
-            // Stop recording when leaving live mode
-            stopRecording();
+            // Live가 아니면 녹화 취소 (segments로 전환하지 않았으므로 저장하지 않음)
+            cancelRecording();
             setStatus('Mode: neutral - Person left (blending...)');
             return;
         }
@@ -739,6 +762,8 @@ function checkPersonAndControlPlayback() {
             personDetectedTs = null;
             personLeftTs = null;
             segmentsStarted = false;
+            // Live가 아니면 녹화 취소
+            cancelRecording();
             return;
         }
     }

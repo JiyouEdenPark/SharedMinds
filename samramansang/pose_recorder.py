@@ -84,6 +84,31 @@ class PoseRecorder:
                 self._active = False
                 return self._seq_id
 
+    def cancel(self) -> Optional[str]:
+        """녹화를 취소하고 파일을 삭제 (저장하지 않음)"""
+        with self._lock:
+            if not self._active:
+                return self._seq_id
+            seq_id = self._seq_id
+            path = self._path
+            try:
+                if self._file:
+                    self._file.close()
+            except Exception:
+                pass
+            finally:
+                self._file = None
+                self._active = False
+                self._seq_id = None
+                self._path = None
+                # 파일 삭제 (저장하지 않음)
+                if path and os.path.exists(path):
+                    try:
+                        os.remove(path)
+                    except Exception:
+                        pass
+                return seq_id
+
     def is_active(self) -> bool:
         with self._lock:
             return self._active
