@@ -25,7 +25,7 @@ from record_router import setup_record_routes
 # 전역 스레드 풀 (프레임 처리용)
 frame_executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="FrameProcessor")
 state = SharedState()
-infer = InferRunner(state)
+infer = InferRunner(state,model_path="yolo11m-pose.pt")
 infer_hand = None  # 손 인식은 현재 사용하지 않음
 recorder = PoseRecorder(root_dir="training/dataset/raw")
 

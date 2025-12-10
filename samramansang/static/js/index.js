@@ -27,6 +27,9 @@ let currentSegNorm = null;
 let currentLiveNorm = null;
 let neutralPose = null;  // 중립포즈 (서 있는 기본 자세)
 
+// Recording state
+let isRecording = false;  // 현재 녹화 중인지 추적
+
 // Mode: neutral -> live -> segments
 // neutral: 사람이 없을 때 중립포즈 표시
 // live: 사람이 감지되면 라이브 포즈 표시
@@ -59,6 +62,66 @@ const toggleBtn = document.getElementById('toggleBtn');
 const bgToggleBtn = document.getElementById('bgToggleBtn');
 
 function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
+
+// Recording functions
+async function startRecording() {
+    if (isRecording) return; // Already recording
+
+    try {
+        const response = await fetch('/websocket/toggle-recording', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'ok' && result.is_recording) {
+            isRecording = true;
+            console.log('Auto-recording started');
+        }
+    } catch (error) {
+        console.error('Recording start error:', error);
+    }
+}
+
+async function stopRecording() {
+    if (!isRecording) return; // Not recording
+
+    try {
+        const response = await fetch('/websocket/toggle-recording', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'ok' && !result.is_recording) {
+            isRecording = false;
+            console.log('Auto-recording stopped');
+        }
+    } catch (error) {
+        console.error('Recording stop error:', error);
+    }
+}
+
+async function checkRecordingStatus() {
+    try {
+        const response = await fetch('/websocket/recording-status');
+        const result = await response.json();
+
+        if (result.status === 'ok') {
+            isRecording = result.is_recording || false;
+        }
+    } catch (error) {
+        console.error('Recording status check error:', error);
+    }
+}
 
 function createNeutralPose() {
     return [
@@ -506,6 +569,8 @@ function toggleMode() {
             mode = 'live';
             personDetectedTs = Date.now();
             segmentsStarted = false;
+            // Start recording when manually switching to live mode
+            startRecording();
             if (!playing) {
                 startSegments();
             }
@@ -534,6 +599,9 @@ function toggleMode() {
             streamCtrl.resetPrev();
         }
 
+        // Stop recording when manually switching to segments mode
+        stopRecording();
+
         // Blend smoothly from live to segments
         blendToSegmentsNow();
 
@@ -547,6 +615,8 @@ function toggleMode() {
         // Segments -> Live: 라이브 모드로 전환
         blendToLiveNow();
         mode = 'live';
+        // Start recording when switching back to live mode
+        startRecording();
         setStatus('Mode: live - Manual switch from segments');
     }
 }
@@ -580,6 +650,8 @@ function checkPersonAndControlPlayback() {
             personDetectedTs = Date.now();
             segmentsStarted = false;
             setStatus('Mode: live - Person detected (blending...)');
+            // Start recording when entering live mode
+            startRecording();
             if (!playing) {
                 startSegments(); // 재생 시작 (live 모드로 렌더링)
             }
@@ -600,6 +672,8 @@ function checkPersonAndControlPlayback() {
                     if (streamCtrl) {
                         streamCtrl.resetPrev();
                     }
+                    // Stop recording when switching to segments mode
+                    stopRecording();
                     // Blend smoothly from live to segments
                     blendToSegmentsNow();
                     if (!playing) {
@@ -637,6 +711,8 @@ function checkPersonAndControlPlayback() {
                     segmentsStarted = false;
                     // Don't stop segments immediately - let blend complete
                     mode = 'neutral';
+                    // Stop recording when leaving segments mode (going to neutral)
+                    stopRecording();
                     setStatus('Mode: neutral - Person left (blending...)');
                 }
             }
@@ -651,6 +727,8 @@ function checkPersonAndControlPlayback() {
             personDetectedTs = null;
             personLeftTs = null;
             segmentsStarted = false;
+            // Stop recording when leaving live mode
+            stopRecording();
             setStatus('Mode: neutral - Person left (blending...)');
             return;
         }
@@ -874,6 +952,9 @@ async function startAll() {
     // WebSocket mode: pose data only (no video)
     console.log('Starting in WebSocket mode');
     initPoseWebSocket();
+
+    // Check initial recording status
+    checkRecordingStatus();
 
     // Ensure overlay background matches bg visibility
     if (renderer) renderer.setRenderOptions({ drawBackground: !bgVisible });
