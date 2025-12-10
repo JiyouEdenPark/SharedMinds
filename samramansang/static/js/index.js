@@ -62,23 +62,23 @@ function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
 
 function createNeutralPose() {
     return [
-        [0.5, 0.15, 1.0],   // 0: nose (중앙 상단)
-        [0.52, 0.12, 1.0],  // 1: left_eye (반전: right_eye 위치)
-        [0.48, 0.12, 1.0],  // 2: right_eye (반전: left_eye 위치)
-        [0.54, 0.13, 1.0],  // 3: left_ear (반전: right_ear 위치)
-        [0.46, 0.13, 1.0],  // 4: right_ear (반전: left_ear 위치)
-        [0.55, 0.28, 1.0],  // 5: left_shoulder (반전: right_shoulder 위치)
-        [0.45, 0.28, 1.0],  // 6: right_shoulder (반전: left_shoulder 위치)
-        [0.60, 0.42, 1.0],  // 7: left_elbow (반전: right_elbow 위치)
-        [0.40, 0.42, 1.0],  // 8: right_elbow (반전: left_elbow 위치)
-        [0.62, 0.55, 1.0],  // 9: left_wrist (반전: right_wrist 위치)
-        [0.38, 0.55, 1.0],  // 10: right_wrist (반전: left_wrist 위치)
-        [0.52, 0.50, 1.0],  // 11: left_hip (반전: right_hip 위치)
-        [0.48, 0.50, 1.0],  // 12: right_hip (반전: left_hip 위치)
-        [0.52, 0.68, 1.0],  // 13: left_knee (반전: right_knee 위치)
-        [0.48, 0.68, 1.0],  // 14: right_knee (반전: left_knee 위치)
-        [0.52, 0.88, 1.0],  // 15: left_ankle (반전: right_ankle 위치)
-        [0.48, 0.88, 1.0],  // 16: right_ankle (반전: left_ankle 위치)
+        [0.5, 0.23, 1.0],   // 0: nose (중앙 상단)
+        [0.51, 0.20, 1.0],  // 1: left_eye (반전: right_eye 위치)
+        [0.49, 0.20, 1.0],  // 2: right_eye (반전: left_eye 위치)
+        [0.525, 0.23, 1.0],  // 3: left_ear (반전: right_ear 위치)
+        [0.475, 0.23, 1.0],  // 4: right_ear (반전: left_ear 위치)
+        [0.54, 0.33, 1.0],  // 5: left_shoulder (반전: right_shoulder 위치)
+        [0.46, 0.33, 1.0],  // 6: right_shoulder (반전: left_shoulder 위치)
+        [0.55, 0.45, 1.0],  // 7: left_elbow (반전: right_elbow 위치)
+        [0.455, 0.50, 1.0],  // 8: right_elbow (반전: left_elbow 위치)
+        [0.53, 0.58, 1.0],  // 9: left_wrist (반전: right_wrist 위치)
+        [0.485, 0.54, 1.0],  // 10: right_wrist (반전: left_wrist 위치)
+        [0.525, 0.55, 1.0],  // 11: left_hip (반전: right_hip 위치)
+        [0.475, 0.55, 1.0],  // 12: right_hip (반전: left_hip 위치)
+        [0.565, 0.63, 1.0],  // 13: left_knee (반전: right_knee 위치)
+        [0.435, 0.63, 1.0],  // 14: right_knee (반전: left_knee 위치)
+        [0.48, 0.60, 1.0],  // 15: left_ankle (반전: right_ankle 위치)
+        [0.52, 0.60, 1.0],  // 16: right_ankle (반전: left_ankle 위치)
     ];
 }
 
@@ -706,7 +706,7 @@ function blendToLiveFromNeutral() {
         const h = stageH || 720;
         const neutralItem = { width: w, height: h, kpts: neutralPose, fps: 30 };
         const liveItem = { width: w, height: h, kpts: currentLiveNorm, fps: 30, switchToLive: true };
-        const blends = createBlendFramesScaled(neutralItem, 1.0, [0, 0], liveItem, 1.0, [0, 0], BLEND_N) || [];
+        const blends = createBlendFramesScaled(neutralItem, 1.0, [0, 0], liveItem, 1.0, [0, 0], BLEND_N * 2) || [];
 
         // Clear playbackFrames and add blend frames
         playbackFrames.length = 0;
@@ -735,7 +735,7 @@ function blendToNeutralFromSegments() {
         const h = stageH || 720;
         const segItem = { width: w, height: h, kpts: curKpts, fps: 30 };
         const neutralItem = { width: w, height: h, kpts: neutralPose, fps: 30, switchToNeutral: true };
-        const blends = createBlendFramesScaled(segItem, 1.0, [0, 0], neutralItem, 1.0, [0, 0], BLEND_N) || [];
+        const blends = createBlendFramesScaled(segItem, 1.0, [0, 0], neutralItem, 1.0, [0, 0], BLEND_N * 2) || [];
 
         // Insert blend frames at current position
         const removedCount = playbackFrames.length - playIdx;
